@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.WebApi", "StellarWallet.WebApi\StellarWallet.WebApi.csproj", "{4CEB36C4-C7E4-459C-BCF7-326E042FFE8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StellarWallet.Application", "StellarWallet.Application\StellarWallet.Application.csproj", "{180B92F7-6577-4FF2-A103-28E44DCABCC8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.Application", "StellarWallet.Application\StellarWallet.Application.csproj", "{180B92F7-6577-4FF2-A103-28E44DCABCC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StellarWallet.Infrastructure", "StellarWallet.Infrastructure\StellarWallet.Infrastructure.csproj", "{C139CE96-33F4-443F-9DEA-7F285D5CF940}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.Infrastructure", "StellarWallet.Infrastructure\StellarWallet.Infrastructure.csproj", "{C139CE96-33F4-443F-9DEA-7F285D5CF940}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StellarWallet.Domain", "StellarWallet.Domain\StellarWallet.Domain.csproj", "{15B4EFC3-2BAC-4D84-9E15-F11C9342770D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.Domain", "StellarWallet.Domain\StellarWallet.Domain.csproj", "{15B4EFC3-2BAC-4D84-9E15-F11C9342770D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

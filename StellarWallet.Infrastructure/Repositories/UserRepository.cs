@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
+using StellarWallet.Infrastructure.DatabaseConnection;
 
 namespace StellarWallet.Infrastructure.Repositories
 {
@@ -18,6 +19,7 @@ namespace StellarWallet.Infrastructure.Repositories
         {
             User? foundUser = await _context.Users.FindAsync(id);
             _context.Remove(foundUser);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<User>> GetAll()

@@ -6,7 +6,7 @@ namespace StellarWallet.Application.Services
 {
     public class UserService(IUserRepository userRepository) : IUserService
     {
-        private readonly Domain.Repositories.IUserRepository _userRepository = userRepository;
+        private readonly IUserRepository _userRepository = userRepository;
 
         public async Task<IEnumerable<User>> GetAll()
         {
