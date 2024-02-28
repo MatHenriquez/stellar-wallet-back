@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\StellarWallet.Infrastructure\StellarWallet.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

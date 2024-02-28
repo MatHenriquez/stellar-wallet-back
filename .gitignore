@@ -49,4 +49,5 @@ node_modules/
 orleans.codegen.cs
 
 # Ignore the application configuration file if it contains secrets
-appsettings.json
+*/appsettings.json
+*/appsettings.Development.json
