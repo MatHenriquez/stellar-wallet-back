@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.WebApi.Controllers
 {
@@ -12,12 +12,41 @@ namespace StellarWallet.WebApi.Controllers
     {
         private readonly IUserService _userService = userService;
 
-        [HttpGet(Name = "Users")]
-        public async Task<IEnumerable<User>> Get()
+        [HttpGet()]
+        public async Task<IActionResult> Get()
         {
-            return await _userService.GetAll();
+            return Ok(await _userService.GetAll());
         }
 
-        // Aquí puedes agregar tus acciones...
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            try
+            {
+                return Ok(await _userService.GetById(id));
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
+        }
+
+        [HttpPost()]
+        public async Task Post(User user)
+        {
+            await _userService.Add(user);
+        }
+
+        [HttpPut()]
+        public async Task Put(User user)
+        {
+            await _userService.Update(user);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task Delete(int id)
+        {
+            await _userService.Delete(id);
+        }
     }
 }
