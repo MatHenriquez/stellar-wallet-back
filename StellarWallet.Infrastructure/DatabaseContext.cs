@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using StellarWallet.Domain.Entities;
 
-namespace StellarWallet.Infrastructure
+namespace StellarWallet.Infrastructure.DatabaseConnection
 {
     public class DatabaseContext : DbContext
     {
@@ -9,8 +10,15 @@ namespace StellarWallet.Infrastructure
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\CFServer;Database=StellarWallet;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True");
-        }
+            var configuration = new ConfigurationBuilder()
+              .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: false)
+              .Build();
 
+            var path = Directory.GetCurrentDirectory();
+
+            var connectionString = configuration.GetConnectionString("StellarWallet");
+            optionsBuilder.UseSqlServer(connectionString);
+        }
     }
 }
