@@ -1,8 +1,7 @@
-using Microsoft.EntityFrameworkCore;
 using StellarWallet.Application.Interfaces;
+using StellarWallet.Application.Mappers;
 using StellarWallet.Application.Services;
 using StellarWallet.Domain.Repositories;
-using StellarWallet.Infrastructure;
 using StellarWallet.Infrastructure.DatabaseConnection;
 using StellarWallet.Infrastructure.Repositories;
 
@@ -13,6 +12,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DatabaseContext>(); // Add DatabaseContext
 builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserRepository
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
+builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

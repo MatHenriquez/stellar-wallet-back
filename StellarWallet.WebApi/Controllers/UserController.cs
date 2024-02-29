@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
 
@@ -12,15 +13,22 @@ namespace StellarWallet.WebApi.Controllers
         private readonly IUserService _userService = userService;
 
         [HttpGet()]
-        public async Task<IEnumerable<User>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _userService.GetAll();
+            return Ok(await _userService.GetAll());
         }
 
         [HttpGet("{id}")]
-        public async Task<User> Get(int id)
+        public async Task<IActionResult> Get(int id)
         {
-            return await _userService.GetById(id);
+            try
+            {
+                return Ok(await _userService.GetById(id));
+            }
+            catch (Exception e)
+            {
+                return NotFound(e.Message);
+            }
         }
 
         [HttpPost()]
