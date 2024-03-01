@@ -2,25 +2,25 @@
 
 namespace StellarWallet.Application.Dtos.Requests
 {
-    public class UserCreationDto(string Name, string LastName, string Email, string Password, string? PublicKey, string? SecretKey)
+    public class UserUpdateDto(int Id, string? Name, string? LastName, string? Email, string? Password, string? PublicKey, string? SecretKey)
     {
-        [Required(ErrorMessage = "Name is required")]
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Id must be a positive number")]
+        public int Id { get;} = Id;
+
         [StringLength(50, MinimumLength = 6, ErrorMessage = "Name must have a maximum of 50 characters and a minimun of 6")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
-        public string Name { get; set; } = Name;
+        public string? Name { get; set; } = Name;
 
-        [Required(ErrorMessage = "Lastname is required")]
         [StringLength(50, MinimumLength = 6, ErrorMessage = "Lastname must have a maximum of 50 characters and a minimun of 6")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
-        public string LastName { get; set; } = LastName;
+        public string? LastName { get; set; } = LastName;
 
-        [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email")]
-        public string Email { get; set; } = Email;
+        public string? Email { get; set; } = Email;
 
-        [Required(ErrorMessage = "Password is required")]
         [StringLength(50, MinimumLength = 8, ErrorMessage = "Password must have a maximum of 50 characters and a minimun of 8")]
-        public string Password { get; set; } = Password;
+        public string? Password { get; set; } = Password;
 
         [StringLength(57, MinimumLength = 56, ErrorMessage = "Public key must have a maximum of 57 characters and a minimun of 56")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,57}$", ErrorMessage = "Special characters are not allowed.")]
@@ -29,5 +29,5 @@ namespace StellarWallet.Application.Dtos.Requests
         [StringLength(57, MinimumLength = 56, ErrorMessage = "Secret key must have a maximum of 57 characters and a minimun of 56")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,57}$", ErrorMessage = "Special characters are not allowed.")]
         public string? SecretKey { get; set; } = SecretKey;
-    } 
+    }
 }
