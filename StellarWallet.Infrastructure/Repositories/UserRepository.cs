@@ -17,8 +17,8 @@ namespace StellarWallet.Infrastructure.Repositories
 
         public async Task Delete(int id)
         {
-            User? foundUser = await _context.Users.FindAsync(id);
-            if (foundUser is null) return;
+            User? foundUser = await GetById(id);
+            
             _context.Remove(foundUser);
             await _context.SaveChangesAsync();
         }

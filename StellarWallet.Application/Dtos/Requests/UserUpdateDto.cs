@@ -1,37 +1,33 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace StellarWallet.Domain.Entities
+namespace StellarWallet.Application.Dtos.Requests
 {
-    public class User(string name, string lastName, string email, string password, string publicKey, string secretKey)
+    public class UserUpdateDto(int Id, string? Name, string? LastName, string? Email, string? Password, string? PublicKey, string? SecretKey)
     {
-        public int Id { get; private set; }
+        [Required]
+        [Range(1, int.MaxValue, ErrorMessage = "Id must be a positive number")]
+        public int Id { get;} = Id;
 
-        [Required(ErrorMessage = "Name is required")]
         [StringLength(50, MinimumLength = 6, ErrorMessage = "Name must have a maximum of 50 characters and a minimun of 6")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
-        public string Name { get; set; } = name;
+        public string? Name { get; set; } = Name;
 
-        [Required(ErrorMessage = "Lastname is required")]
         [StringLength(50, MinimumLength = 6, ErrorMessage = "Lastname must have a maximum of 50 characters and a minimun of 6")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
-        public string LastName { get; set; } = lastName;
+        public string? LastName { get; set; } = LastName;
 
-        [Required(ErrorMessage = "Email is required")]
         [EmailAddress(ErrorMessage = "Invalid email")]
-        public string Email { get; set; } = email;
+        public string? Email { get; set; } = Email;
 
-        [Required(ErrorMessage = "Password is required")]
         [StringLength(50, MinimumLength = 8, ErrorMessage = "Password must have a maximum of 50 characters and a minimun of 8")]
-        public string Password { get; set; } = password;
+        public string? Password { get; set; } = Password;
 
-        [Required(ErrorMessage = "Public key is required")]
         [StringLength(57, MinimumLength = 56, ErrorMessage = "Public key must have a maximum of 57 characters and a minimun of 56")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,57}$", ErrorMessage = "Special characters are not allowed.")]
-        public string PublicKey { get; set; } = publicKey;
+        public string? PublicKey { get; set; } = PublicKey;
 
-        [Required(ErrorMessage = "Secret key is required")]
         [StringLength(57, MinimumLength = 56, ErrorMessage = "Secret key must have a maximum of 57 characters and a minimun of 56")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,57}$", ErrorMessage = "Special characters are not allowed.")]
-        public string SecretKey { get; set; } = secretKey;
+        public string? SecretKey { get; set; } = SecretKey;
     }
 }

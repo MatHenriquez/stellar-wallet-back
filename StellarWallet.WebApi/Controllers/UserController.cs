@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StellarWallet.Application.Dtos.Responses;
+using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
-using StellarWallet.Domain.Entities;
 
 namespace StellarWallet.WebApi.Controllers
 {
@@ -32,21 +31,32 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPost()]
-        public async Task Post(User user)
+        public async Task Post(UserCreationDto user)
         {
             await _userService.Add(user);
         }
 
         [HttpPut()]
-        public async Task Put(User user)
+        public async Task<IActionResult> Put(UserUpdateDto user)
         {
-            await _userService.Update(user);
+            try
+            {
+                await _userService.Update(user);
+                return Ok();
+            }
+            catch (Exception e) { return NotFound(e.Message); }
+
         }
 
         [HttpDelete("{id}")]
-        public async Task Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            await _userService.Delete(id);
+            try
+            {
+                await _userService.Delete(id);
+                return Ok();
+            }
+            catch (Exception e) { return NotFound(e.Message); }
         }
     }
 }

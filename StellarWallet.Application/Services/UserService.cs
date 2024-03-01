@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
@@ -19,22 +20,24 @@ namespace StellarWallet.Application.Services
 
         public async Task<UserDto> GetById(int id)
         {
-                User foundUser = await _userRepository.GetById(id);
-                return _mapper.Map<UserDto>(foundUser);
-                    }
-
-        public async Task Add(User user)
-        {
-            await _userRepository.Add(user);
+            User foundUser = await _userRepository.GetById(id);
+            return _mapper.Map<UserDto>(foundUser);
         }
 
-        public async Task Update(User user)
+        public async Task Add(UserCreationDto user)
         {
-            await _userRepository.Update(user);
+            await _userRepository.Add(_mapper.Map<User>(user));
+        }
+
+        public async Task Update(UserUpdateDto user)
+        {
+            await _userRepository.GetById(user.Id);
+            await _userRepository.Update(_mapper.Map<User>(user));
         }
 
         public async Task Delete(int id)
         {
+            await _userRepository.GetById(id);
             await _userRepository.Delete(id);
         }
     }
