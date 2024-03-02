@@ -4,6 +4,7 @@ using StellarWallet.Application.Services;
 using StellarWallet.Domain.Repositories;
 using StellarWallet.Infrastructure.DatabaseConnection;
 using StellarWallet.Infrastructure.Repositories;
+using StellarWallet.Infrastructure.Stellar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DatabaseContext>(); // Add DatabaseContext
 builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserRepository
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
+builder.Services.AddScoped<IBlockchainService, Stellar>(); // Add BlockchainService
+builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add TransactionService
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();
