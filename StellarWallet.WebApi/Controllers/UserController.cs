@@ -1,15 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
+using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.WebApi.Controllers
 {
 
     [ApiController]
     [Route("[controller]")]
-    public class UserController(IUserService userService) : ControllerBase
+    public class UserController(IUserService userService, IBlockchainService stellarService) : ControllerBase
     {
         private readonly IUserService _userService = userService;
+        private readonly IBlockchainService _stellarService = stellarService;
 
         [HttpGet()]
         public async Task<IActionResult> Get()
@@ -33,6 +36,9 @@ namespace StellarWallet.WebApi.Controllers
         [HttpPost()]
         public async Task Post(UserCreationDto user)
         {
+            StellarAccount account = _stellarService.CreateAccount();
+            user.SecretKey = user.SecretKey is null ? account.SecretKey : user.SecretKey;
+            user.PublicKey = user.PublicKey is null ? account.PublicKey : user.PublicKey;
             await _userService.Add(user);
         }
 
