@@ -7,12 +7,12 @@ namespace StellarWallet.Domain.Entities
         public int Id { get; private set; }
 
         [Required(ErrorMessage = "Name is required")]
-        [StringLength(50, MinimumLength = 6, ErrorMessage = "Name must have a maximum of 50 characters and a minimun of 6")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Name must have a maximum of 50 characters and a minimun of 3")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
         public string Name { get; set; } = name;
 
         [Required(ErrorMessage = "Lastname is required")]
-        [StringLength(50, MinimumLength = 6, ErrorMessage = "Lastname must have a maximum of 50 characters and a minimun of 6")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Lastname must have a maximum of 50 characters and a minimun of 3")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]
         public string LastName { get; set; } = lastName;
 
