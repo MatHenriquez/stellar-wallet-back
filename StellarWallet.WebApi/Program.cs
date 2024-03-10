@@ -15,6 +15,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserReposi
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
 builder.Services.AddScoped<IBlockchainService, Stellar>(); // Add BlockchainService
 builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add TransactionService
+builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();
