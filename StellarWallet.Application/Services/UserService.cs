@@ -26,6 +26,10 @@ namespace StellarWallet.Application.Services
 
         public async Task Add(UserCreationDto user)
         {
+            User? foundUser = await _userRepository.GetBy("Email", user.Email);
+            if (foundUser != null)
+                throw new Exception("User already exists");
+
             await _userRepository.Add(_mapper.Map<User>(user));
         }
 

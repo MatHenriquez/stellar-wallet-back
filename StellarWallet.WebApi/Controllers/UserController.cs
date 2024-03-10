@@ -34,12 +34,24 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPost()]
-        public async Task Post(UserCreationDto user)
+        public async Task<IActionResult> Post(UserCreationDto user)
         {
             StellarAccount account = _stellarService.CreateAccount();
             user.SecretKey = user.SecretKey is null ? account.SecretKey : user.SecretKey;
             user.PublicKey = user.PublicKey is null ? account.PublicKey : user.PublicKey;
-            await _userService.Add(user);
+
+            try
+            {
+                await _userService.Add(user);
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "User already exists")
+                    return BadRequest(e.Message);
+                else
+                    throw new Exception("Error creating user");
+            }
         }
 
         [HttpPut()]
