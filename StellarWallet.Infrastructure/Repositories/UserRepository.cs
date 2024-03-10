@@ -18,7 +18,7 @@ namespace StellarWallet.Infrastructure.Repositories
         public async Task Delete(int id)
         {
             User? foundUser = await GetById(id);
-            
+
             _context.Remove(foundUser);
             await _context.SaveChangesAsync();
         }
@@ -32,6 +32,19 @@ namespace StellarWallet.Infrastructure.Repositories
         {
             User? foundUser = await _context.Users.FindAsync(id);
             return foundUser is null ? throw new Exception("User not found") : foundUser;
+        }
+
+        public async Task<User> GetBy(string paramName, string paramValue)
+        {
+            var propertyInfo = typeof(User).GetProperty(paramName) ?? throw new ArgumentException($"Invalid property: '{paramName}'.");
+            var query = _context.Users.Where(u => EF.Property<string>(u, propertyInfo.Name) == paramValue);
+
+            try { 
+                return await query.FirstAsync(); 
+            }
+            catch { 
+                throw new Exception("User not found"); 
+            }
         }
 
         public async Task Update(User user)
