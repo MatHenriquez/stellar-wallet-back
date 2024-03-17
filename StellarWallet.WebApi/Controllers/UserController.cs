@@ -50,7 +50,8 @@ namespace StellarWallet.WebApi.Controllers
                 if (e.Message == "User already exists")
                     return BadRequest(e.Message);
                 else
-                    throw new Exception("Error creating user");
+                    //throw new Exception("Error creating user");
+                    return StatusCode(500, $"Internal server error: {e.Message}");
             }
         }
 
