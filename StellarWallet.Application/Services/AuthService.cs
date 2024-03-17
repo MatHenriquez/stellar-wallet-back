@@ -12,8 +12,7 @@ namespace StellarWallet.Application.Services
 
         public async Task<LoggedDto> Login(LoginDto loginDto)
         {
-            User user = await _userRepository.GetBy("Email", loginDto.Email);
-
+            User? user = await _userRepository.GetBy("Email", loginDto.Email) ?? throw new Exception("User not found");
             if (user.Password != loginDto.Password)
                 throw new Exception("Invalid password");
 
