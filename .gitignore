@@ -9,30 +9,31 @@
 *.sln.docstates
 *.sln.ide/
 .vs
+**/.vs/
 
 # Build / binary files
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-build/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
+**/[Dd]ebug/
+**/[Dd]ebugPublic/
+**/[Rr]elease/
+**/[Rr]eleases/
+**/x64/
+**/x86/
+**/build/
+**/bld/
+**/[Bb]in/
+**/[Oo]bj/
+**/[Ll]og/
 
 # Package files
-*.nupkg
+**/*.nupkg
 # Avoid including NuGet packages in version control
 **/[Pp]ackages/*
 # Exclude the NuGet cache folder
-~/.nuget/packages/
+**/.nuget/packages/
 # Exclude all files in the NuGet packages folder
-*.[Pp]ackages.*
+**/*.[Pp]ackages.*
 # Exclude the file that stores the list of recent packages
-.packages
+**/.packages
 
 # Others
 sql/
@@ -49,5 +50,5 @@ node_modules/
 orleans.codegen.cs
 
 # Ignore the application configuration file if it contains secrets
-*/appsettings.json
-*/appsettings.Development.json
+**/appsettings.json
+**/appsettings.Development.json
