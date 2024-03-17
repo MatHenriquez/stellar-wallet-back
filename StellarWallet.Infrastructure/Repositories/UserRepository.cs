@@ -34,7 +34,7 @@ namespace StellarWallet.Infrastructure.Repositories
             return foundUser is null ? throw new Exception("User not found") : foundUser;
         }
 
-        public async Task<User> GetBy(string paramName, string paramValue)
+        public async Task<User?> GetBy(string paramName, string paramValue)
         {
             var propertyInfo = typeof(User).GetProperty(paramName) ?? throw new ArgumentException($"Invalid property: '{paramName}'.");
             var query = _context.Users.Where(u => EF.Property<string>(u, propertyInfo.Name) == paramValue);
@@ -43,7 +43,7 @@ namespace StellarWallet.Infrastructure.Repositories
                 return await query.FirstAsync(); 
             }
             catch { 
-                throw new Exception("User not found"); 
+                return null;
             }
         }
 
