@@ -7,7 +7,7 @@ namespace StellarWallet.Application.Interfaces
     {
         Task<IEnumerable<UserDto>> GetAll();
         Task<UserDto> GetById(int id);
-        Task Add(UserCreationDto user);
+        Task<LoggedDto> Add(UserCreationDto user);
         Task Update(UserUpdateDto user);
         Task Delete(int id);
     }
