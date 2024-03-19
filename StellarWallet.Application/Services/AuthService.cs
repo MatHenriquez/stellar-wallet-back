@@ -16,7 +16,7 @@ namespace StellarWallet.Application.Services
             if (user.Password != loginDto.Password)
                 throw new Exception("Invalid password");
 
-            return new LoggedDto(true, "token");
+            return new LoggedDto(true, user.PublicKey);
         }
     }
 }
