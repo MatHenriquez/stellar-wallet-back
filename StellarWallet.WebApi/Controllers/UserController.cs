@@ -41,16 +41,14 @@ namespace StellarWallet.WebApi.Controllers
             user.PublicKey = user.PublicKey is null ? account.PublicKey : user.PublicKey;
 
             try
-            {
-                await _userService.Add(user);
-                return Ok();
+            {         
+                return Ok(await _userService.Add(user));
             }
             catch (Exception e)
             {
                 if (e.Message == "User already exists")
                     return BadRequest(e.Message);
                 else
-                    //throw new Exception("Error creating user");
                     return StatusCode(500, $"Internal server error: {e.Message}");
             }
         }
