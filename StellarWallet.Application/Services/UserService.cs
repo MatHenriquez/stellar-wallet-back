@@ -7,9 +7,10 @@ using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IMapper mapper) : IUserService
+    public class UserService(IUserRepository userRepository, IJwtService jwtService, IMapper mapper) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IJwtService _jwtService = jwtService;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<UserDto>> GetAll()
@@ -32,7 +33,9 @@ namespace StellarWallet.Application.Services
 
             await _userRepository.Add(_mapper.Map<User>(user));
 
-            return new LoggedDto(true, user.PublicKey);
+            string createdToken = _jwtService.CreateToken(user.Email);
+
+            return new LoggedDto(true, createdToken, user.PublicKey);
         }
 
         public async Task Update(UserUpdateDto user)

@@ -20,7 +20,7 @@ namespace StellarWallet.WebApi.Controllers
             }
             catch (Exception e)
             {
-                if(e.Message == "Invalid password")
+                if(e.Message == "Invalid credentials")
                     return Unauthorized(e.Message);
                 else if(e.Message == "User not found")
                     return NotFound(e.Message);
