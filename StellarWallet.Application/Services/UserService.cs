@@ -7,10 +7,11 @@ using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IJwtService jwtService, IMapper mapper) : IUserService
+    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IJwtService _jwtService = jwtService;
+        private readonly IEncryptionService _encryptionService = encryptionService;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<UserDto>> GetAll()
@@ -28,8 +29,10 @@ namespace StellarWallet.Application.Services
         public async Task<LoggedDto> Add(UserCreationDto user)
         {
             User? foundUser = await _userRepository.GetBy("Email", user.Email);
-            if (foundUser != null)
+            if (foundUser is not null)
                 throw new Exception("User already exists");
+
+            user.Password = _encryptionService.Encrypt(user.Password);
 
             await _userRepository.Add(_mapper.Map<User>(user));
 
@@ -40,6 +43,9 @@ namespace StellarWallet.Application.Services
 
         public async Task Update(UserUpdateDto user)
         {
+            if(user.Password is not null)
+                user.Password = _encryptionService.Encrypt(user.Password);
+
             await _userRepository.GetById(user.Id);
             await _userRepository.Update(_mapper.Map<User>(user));
         }
