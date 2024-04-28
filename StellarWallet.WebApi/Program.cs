@@ -43,6 +43,7 @@ builder.Services.AddScoped<IBlockchainService, Stellar>(); // Add BlockchainServ
 builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add TransactionService
 builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddScoped<IJwtService, JwtService>(); // Add JwtService
+builder.Services.AddScoped<IEncryptionService, EncryptionService>(); // Add EncryptionService
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();
