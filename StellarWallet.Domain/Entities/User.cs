@@ -21,7 +21,6 @@ namespace StellarWallet.Domain.Entities
         public string Email { get; set; } = email;
 
         [Required(ErrorMessage = "Password is required")]
-        [StringLength(50, MinimumLength = 8, ErrorMessage = "Password must have a maximum of 50 characters and a minimun of 8.")]
         public string Password { get; set; } = password;
 
         [Required(ErrorMessage = "Public key is required")]
