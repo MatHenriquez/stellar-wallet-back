@@ -2,10 +2,10 @@
 
 namespace StellarWallet.Application.Dtos.Requests
 {
-    public class SendPaymentDto(int userId, string destinationPublicKey, decimal amount)
+    public class SendPaymentDto(string userToken, string destinationPublicKey, decimal amount)
     {
-        [Range(1, int.MaxValue, ErrorMessage = "Invalid user ID")]
-        public int UserId { get; set; } = userId;
+        [Required(ErrorMessage = "User token is required")]
+        public string UserToken { get; set; } = userToken;
 
         [Required(ErrorMessage = "Public key is required")]
         [StringLength(56, MinimumLength = 56, ErrorMessage = "Public key must have 56 characters")]
