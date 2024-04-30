@@ -5,9 +5,10 @@ using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.Application.Services
 {
-    public class TransactionService(IBlockchainService blockchainService, IUserRepository userRepository) : ITransactionService
+    public class TransactionService(IBlockchainService blockchainService, IUserRepository userRepository, IJwtService jwtService) : ITransactionService
     {
         private readonly IBlockchainService _blockchainService = blockchainService;
+        private readonly IJwtService _jwtService = jwtService;
         private readonly IUserRepository _userService = userRepository;
 
         public StellarAccount CreateAccount()
@@ -17,16 +18,15 @@ namespace StellarWallet.Application.Services
 
         public async Task<bool> SendPayment(SendPaymentDto sendPaymentDto)
         {
-            User user = await _userService.GetById(sendPaymentDto.UserId);
+            string userEmail = _jwtService.DecodeToken(sendPaymentDto.UserToken);
+            User user = await _userService.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
             bool transactionCompleted = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
 
-            if (transactionCompleted) 
-            {
+            if (transactionCompleted)
                 return transactionCompleted;
-            } else
-            {
+            else
                 throw new Exception("Transaction failed");
-            }
         }
     }
 }

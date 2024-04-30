@@ -32,5 +32,37 @@ namespace StellarWallet.Application.Services
 
             return tokenHandler.WriteToken(tokenConfig);
         }
+
+        public string DecodeToken(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+
+            if (secretKey == null)
+                throw new Exception("Secret key not found");
+            var keyBytes = Encoding.ASCII.GetBytes(secretKey);
+
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+
+            try
+            {
+                var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out _);
+
+                var allClaims = claimsPrincipal.Claims.ToList();
+
+                if(allClaims.Count == 0)
+                    throw new Exception("No claims found");
+                return allClaims[0].Value;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error decoding JWT: {ex.Message}");
+            }
+        }
     }
 }
