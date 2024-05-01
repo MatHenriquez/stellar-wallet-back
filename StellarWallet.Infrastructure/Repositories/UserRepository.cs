@@ -39,10 +39,12 @@ namespace StellarWallet.Infrastructure.Repositories
             var propertyInfo = typeof(User).GetProperty(paramName) ?? throw new ArgumentException($"Invalid property: '{paramName}'.");
             var query = _context.Users.Where(u => EF.Property<string>(u, propertyInfo.Name) == paramValue);
 
-            try { 
-                return await query.FirstAsync(); 
+            try
+            {
+                return await query.FirstAsync();
             }
-            catch { 
+            catch
+            {
                 return null;
             }
         }
