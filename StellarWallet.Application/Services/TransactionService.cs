@@ -2,6 +2,7 @@
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
 {
@@ -27,6 +28,14 @@ namespace StellarWallet.Application.Services
                 return transactionCompleted;
             else
                 throw new Exception("Transaction failed");
+        }
+
+        public async Task<BlockchainPayment[]> GetTransaction(string jwt)
+        {
+            string userEmail = _jwtService.DecodeToken(jwt);
+            User user = await _userService.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
+            return await _blockchainService.GetPayments(user.PublicKey);
         }
     }
 }
