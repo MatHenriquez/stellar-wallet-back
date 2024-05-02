@@ -37,7 +37,7 @@ namespace StellarWallet.WebApi.Controllers
 
         [HttpGet("Payment")]
         [Authorize]
-        public async Task<IActionResult> GetPayments([FromQuery] string? transactionId)
+        public async Task<IActionResult> GetPayments([FromQuery] int pageNumber, int pageSize)
         {
             try
             {
@@ -45,7 +45,7 @@ namespace StellarWallet.WebApi.Controllers
                 if (jwt is null)
                     return Unauthorized();
 
-                return Ok(await _transactionService.GetTransaction(jwt));
+                return Ok(await _transactionService.GetTransaction(jwt, pageNumber, pageSize));
             }
             catch (Exception e)
             {
