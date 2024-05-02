@@ -1,10 +1,5 @@
 ﻿using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Structs;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StellarWallet.Domain.Repositories
 {

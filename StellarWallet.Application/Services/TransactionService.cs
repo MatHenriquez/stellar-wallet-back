@@ -30,12 +30,19 @@ namespace StellarWallet.Application.Services
                 throw new Exception("Transaction failed");
         }
 
-        public async Task<BlockchainPayment[]> GetTransaction(string jwt)
+        public async Task<BlockchainPayment[]> GetTransaction(string jwt, int pageNumber, int pageSize)
         {
             string userEmail = _jwtService.DecodeToken(jwt);
             User user = await _userService.GetBy("Email", userEmail) ?? throw new Exception("User not found");
 
-            return await _blockchainService.GetPayments(user.PublicKey);
+            BlockchainPayment[] allPayments = await _blockchainService.GetPayments(user.PublicKey);
+
+            BlockchainPayment[] paginatedPayments = allPayments
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToArray();
+
+            return paginatedPayments;
         }
     }
 }
