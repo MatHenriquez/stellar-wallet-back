@@ -36,7 +36,7 @@ namespace StellarWallet.WebApi.Controllers
         [HttpPost()]
         public async Task<IActionResult> Post(UserCreationDto user)
         {
-            StellarAccount account = _stellarService.CreateAccount();
+            BlockchainAccount account = _stellarService.CreateAccount();
             user.SecretKey = user.SecretKey is null ? account.SecretKey : user.SecretKey;
             user.PublicKey = user.PublicKey is null ? account.PublicKey : user.PublicKey;
 
