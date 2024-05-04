@@ -9,13 +9,14 @@ namespace StellarWallet.Infrastructure.Stellar
 {
     public class Stellar : IBlockchainService
     {
+        private readonly string testnetUrl = "https://horizon-testnet.stellar.org";
         private readonly Network network = new("Test SDF Network ; September 2015");
         private readonly Server server = new Server("https://horizon-testnet.stellar.org");
 
-        public StellarAccount CreateAccount()
+        public BlockchainAccount CreateAccount()
         {
             KeyPair keyPair = KeyPair.Random();
-            return new StellarAccount(PublicKey: keyPair.AccountId, SecretKey: keyPair.SecretSeed);
+            return new BlockchainAccount(PublicKey: keyPair.AccountId, SecretKey: keyPair.SecretSeed);
         }
 
         public async Task<bool> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount)
@@ -88,6 +89,22 @@ namespace StellarWallet.Infrastructure.Stellar
             }
 
             return payments.ToArray();
+        }
+
+        public async Task<bool> GetTestFunds(string accountId)
+        {
+            try
+            {
+                var friendBotRequest = new HttpRequestMessage(HttpMethod.Get, $"{testnetUrl}/friendbot?addr={accountId}");
+                var response = await new HttpClient().SendAsync(friendBotRequest);
+
+                return response.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return false;
+            }
+
         }
     }
 }

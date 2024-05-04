@@ -12,7 +12,7 @@ namespace StellarWallet.Application.Services
         private readonly IJwtService _jwtService = jwtService;
         private readonly IUserRepository _userService = userRepository;
 
-        public StellarAccount CreateAccount()
+        public BlockchainAccount CreateAccount()
         {
             return _blockchainService.CreateAccount();
         }
@@ -43,6 +43,11 @@ namespace StellarWallet.Application.Services
                 .ToArray();
 
             return paginatedPayments;
+        }
+
+        public async Task<bool> GetTestFunds(string publicKey)
+        {
+            return await _blockchainService.GetTestFunds(publicKey);
         }
     }
 }

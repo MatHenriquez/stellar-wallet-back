@@ -55,5 +55,22 @@ namespace StellarWallet.WebApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
         }
+
+        [HttpPost("TestFunds")]
+        [Authorize]
+        public async Task<IActionResult> GetTestFunds([FromBody] GetTestFundsDto getTestFundsDto)
+        {
+            string? jwt = await HttpContext.GetTokenAsync("access_token");
+            if (jwt is null)
+                return Unauthorized();
+
+            bool wasFunded = await _transactionService.GetTestFunds(getTestFundsDto.PublicKey);
+
+            if (wasFunded)
+                return Ok();
+            else
+                return StatusCode(StatusCodes.Status500InternalServerError, "Funds not received");
+        }
     }
 }
+
