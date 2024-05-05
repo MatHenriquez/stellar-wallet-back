@@ -7,7 +7,7 @@ using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Infrastructure.Stellar
 {
-    public class Stellar : IBlockchainService
+    public class StellarService : IBlockchainService
     {
         private readonly string testnetUrl = "https://horizon-testnet.stellar.org";
         private readonly Network network = new("Test SDF Network ; September 2015");
