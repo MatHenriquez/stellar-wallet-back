@@ -39,7 +39,7 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<DatabaseContext>(); // Add DatabaseContext
 builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserRepository
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
-builder.Services.AddScoped<IBlockchainService, Stellar>(); // Add BlockchainService
+builder.Services.AddScoped<IBlockchainService, StellarService>(); // Add BlockchainService
 builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add TransactionService
 builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddScoped<IJwtService, JwtService>(); // Add JwtService

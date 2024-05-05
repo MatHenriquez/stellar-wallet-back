@@ -43,7 +43,7 @@ namespace StellarWallet.Application.Services
 
         public async Task Update(UserUpdateDto user)
         {
-            if(user.Password is not null)
+            if (user.Password is not null)
                 user.Password = _encryptionService.Encrypt(user.Password);
 
             await _userRepository.GetById(user.Id);
