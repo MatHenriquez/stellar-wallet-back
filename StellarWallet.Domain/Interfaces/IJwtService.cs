@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using StellarWallet.Domain.Entities;
-
-namespace StellarWallet.Application.Interfaces
+﻿namespace StellarWallet.Application.Interfaces
 {
     public interface IJwtService
     {
