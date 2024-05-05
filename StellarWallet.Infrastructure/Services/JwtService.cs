@@ -55,7 +55,7 @@ namespace StellarWallet.Application.Services
 
                 var allClaims = claimsPrincipal.Claims.ToList();
 
-                if(allClaims.Count == 0)
+                if (allClaims.Count == 0)
                     throw new Exception("No claims found");
                 return allClaims[0].Value;
             }
