@@ -56,7 +56,7 @@ namespace StellarWallet.WebApi.Controllers
             }
         }
 
-        [HttpPost("TestFunds")]
+        [HttpPost("TestFund")]
         [Authorize]
         public async Task<IActionResult> GetTestFunds([FromBody] GetTestFundsDto getTestFundsDto)
         {
@@ -70,6 +70,26 @@ namespace StellarWallet.WebApi.Controllers
                 return Ok();
             else
                 return StatusCode(StatusCodes.Status500InternalServerError, "Funds not received");
+        }
+
+        [HttpGet("Balance")]
+        [Authorize]
+        public async Task<IActionResult> GetBalances([FromQuery] GetBalancesDto getBalancesDto)
+        {
+            string? jwt = await HttpContext.GetTokenAsync("access_token");
+            if (jwt is null)
+                return Unauthorized();
+
+            try { 
+            return Ok(await _transactionService.GetBalances(getBalancesDto));
+                }
+            catch (Exception e)
+            {
+                if (e.Message == "User not found")
+                    return NotFound(e.Message);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
     }
 }
