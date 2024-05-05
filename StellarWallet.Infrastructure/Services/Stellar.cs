@@ -88,7 +88,7 @@ namespace StellarWallet.Infrastructure.Stellar
                 throw new Exception("Stellar Error " + e.Message);
             }
 
-            return payments.ToArray();
+            return [.. payments];
         }
 
         public async Task<bool> GetTestFunds(string accountId)
@@ -105,6 +105,24 @@ namespace StellarWallet.Infrastructure.Stellar
                 return false;
             }
 
+        }
+
+        public async Task<AccountBalances[]> GetBalances(string accountId)
+        {
+            var balances = new List<AccountBalances>();
+
+            var account = await server.Accounts.Account(accountId);
+
+            foreach (var balance in account.Balances)
+            {
+                balances.Add(new AccountBalances
+                {
+                    Asset = balance.Asset is AssetTypeNative ? "native" : ((AssetTypeCreditAlphaNum)balance.Asset).Code,
+                    Amount = balance.BalanceString,
+                });
+            }
+
+            return [.. balances];
         }
     }
 }
