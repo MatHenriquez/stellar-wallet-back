@@ -1,4 +1,5 @@
 ﻿using StellarWallet.Application.Dtos.Requests;
+using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
@@ -48,6 +49,16 @@ namespace StellarWallet.Application.Services
         public async Task<bool> GetTestFunds(string publicKey)
         {
             return await _blockchainService.GetTestFunds(publicKey);
+        }
+
+        public async Task<FoundBalancesDto> GetBalances(GetBalancesDto getBalancesDto)
+        {
+            AccountBalances[] balances = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
+
+            if (getBalancesDto.FilterZeroBalances)
+                balances = balances.Where(balance => balance.Amount == "0").ToArray();
+
+            return new FoundBalancesDto(balances);
         }
     }
 }
