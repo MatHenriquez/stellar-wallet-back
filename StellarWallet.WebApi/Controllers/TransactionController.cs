@@ -12,10 +12,25 @@ namespace StellarWallet.WebApi.Controllers
     {
         private readonly ITransactionService _transactionService = transactionService;
 
-        [HttpGet("AccountCreation")]
-        public IActionResult CreateAccount()
+        [HttpPost("AccountCreation")]
+        [Authorize]
+        public async Task<IActionResult> CreateAccount()
         {
-            return Ok(_transactionService.CreateAccount());
+            try
+            {
+                string? jwt = await HttpContext.GetTokenAsync("access_token");
+                if (jwt is null)
+                    return Unauthorized();
+
+                return Ok(_transactionService.CreateAccount(jwt));
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "User not found")
+                    return NotFound(e.Message);
+
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         [HttpPost("Payment")]
@@ -80,9 +95,10 @@ namespace StellarWallet.WebApi.Controllers
             if (jwt is null)
                 return Unauthorized();
 
-            try { 
-            return Ok(await _transactionService.GetBalances(getBalancesDto));
-                }
+            try
+            {
+                return Ok(await _transactionService.GetBalances(getBalancesDto));
+            }
             catch (Exception e)
             {
                 if (e.Message == "User not found")
