@@ -13,10 +13,23 @@ namespace StellarWallet.Infrastructure.Stellar
         private readonly Network network = new("Test SDF Network ; September 2015");
         private readonly Server server = new Server("https://horizon-testnet.stellar.org");
 
-        public BlockchainAccount CreateAccount()
+        public BlockchainAccount CreateAccount(int userId)
         {
             KeyPair keyPair = KeyPair.Random();
-            return new BlockchainAccount(PublicKey: keyPair.AccountId, SecretKey: keyPair.SecretSeed);
+            return new BlockchainAccount(PublicKey: keyPair.AccountId, SecretKey: keyPair.SecretSeed, userId);
+        }
+
+        public AccountKeyPair CreateKeyPair()
+        {
+            KeyPair keyPair = KeyPair.Random();
+
+            var accountKeyPair = new AccountKeyPair
+            {
+                PublicKey = keyPair.AccountId,
+                SecretKey = keyPair.SecretSeed
+            };
+
+            return accountKeyPair;
         }
 
         public async Task<bool> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount)

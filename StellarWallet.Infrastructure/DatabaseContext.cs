@@ -7,6 +7,7 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
     public class DatabaseContext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<BlockchainAccount> BlockchainAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

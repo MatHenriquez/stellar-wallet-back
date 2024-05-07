@@ -5,7 +5,8 @@ namespace StellarWallet.Domain.Repositories
 {
     public interface IBlockchainService
     {
-        public BlockchainAccount CreateAccount();
+        public BlockchainAccount CreateAccount(int userId);
+        public AccountKeyPair CreateKeyPair();
         public Task<bool> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount);
         public Task<BlockchainPayment[]> GetPayments(string publicKey);
         public Task<bool> GetTestFunds(string publicKey);

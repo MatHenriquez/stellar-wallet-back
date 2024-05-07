@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
-using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.WebApi.Controllers
@@ -36,12 +35,8 @@ namespace StellarWallet.WebApi.Controllers
         [HttpPost()]
         public async Task<IActionResult> Post(UserCreationDto user)
         {
-            BlockchainAccount account = _stellarService.CreateAccount();
-            user.SecretKey = user.SecretKey is null ? account.SecretKey : user.SecretKey;
-            user.PublicKey = user.PublicKey is null ? account.PublicKey : user.PublicKey;
-
             try
-            {         
+            {
                 return Ok(await _userService.Add(user));
             }
             catch (Exception e)

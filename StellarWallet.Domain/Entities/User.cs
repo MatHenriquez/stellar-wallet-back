@@ -4,6 +4,7 @@ namespace StellarWallet.Domain.Entities
 {
     public class User(string name, string lastName, string email, string password, string publicKey, string secretKey)
     {
+        [Key]
         public int Id { get; private set; }
 
         [Required(ErrorMessage = "Name is required")]
@@ -32,5 +33,7 @@ namespace StellarWallet.Domain.Entities
         [StringLength(56, MinimumLength = 56, ErrorMessage = "Secret key must have a 56 characters.")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{56}$", ErrorMessage = "Special characters are not allowed.")]
         public string SecretKey { get; set; } = secretKey;
+
+        public ICollection<BlockchainAccount>? BlockchainAccounts { get; set; } = null;
     }
 }
