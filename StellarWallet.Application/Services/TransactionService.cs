@@ -11,17 +11,19 @@ namespace StellarWallet.Application.Services
     {
         private readonly IBlockchainService _blockchainService = blockchainService;
         private readonly IJwtService _jwtService = jwtService;
-        private readonly IUserRepository _userService = userRepository;
+        private readonly IUserRepository _userRepository = userRepository;
 
-        public BlockchainAccount CreateAccount()
+        public async Task<BlockchainAccount> CreateAccount(string jwt)
         {
-            return _blockchainService.CreateAccount();
+            string userEmail = _jwtService.DecodeToken(jwt);
+            User user = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            return _blockchainService.CreateAccount(user.Id);
         }
 
         public async Task<bool> SendPayment(SendPaymentDto sendPaymentDto)
         {
             string userEmail = _jwtService.DecodeToken(sendPaymentDto.UserToken);
-            User user = await _userService.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            User user = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
 
             bool transactionCompleted = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
 
@@ -34,7 +36,7 @@ namespace StellarWallet.Application.Services
         public async Task<BlockchainPayment[]> GetTransaction(string jwt, int pageNumber, int pageSize)
         {
             string userEmail = _jwtService.DecodeToken(jwt);
-            User user = await _userService.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            User user = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
 
             BlockchainPayment[] allPayments = await _blockchainService.GetPayments(user.PublicKey);
 
