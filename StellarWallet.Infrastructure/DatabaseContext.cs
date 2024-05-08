@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using LaunchDarkly.EventSource;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StellarWallet.Domain.Entities;
 
@@ -6,8 +7,14 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 {
     public class DatabaseContext : DbContext
     {
+        private readonly IConfiguration _configuration;
         public DbSet<User> Users { get; set; }
         public DbSet<BlockchainAccount> BlockchainAccounts { get; set; }
+
+        public DatabaseContext(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -18,14 +25,7 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var configuration = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: false)
-              .Build();
-
-            var path = Directory.GetCurrentDirectory();
-
-            var connectionString = configuration.GetConnectionString("StellarWallet");
+            var connectionString = _configuration.GetConnectionString("StellarWallet");
             optionsBuilder.UseSqlServer(connectionString);
         }
     }
