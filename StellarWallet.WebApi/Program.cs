@@ -11,9 +11,23 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.json");
-var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").ToString();
-var keyBytes = Encoding.UTF8.GetBytes(secretKey);
+byte[]? keyBytes;
+
+if (builder.Environment.IsEnvironment("dev"))
+{
+    builder.Configuration.AddUserSecrets<Program>();
+    builder.Configuration.AddJsonFile("appsettings.json");
+    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
+
+    keyBytes = Encoding.UTF8.GetBytes(secretKey);
+} else
+{
+    builder.Configuration.AddUserSecrets<Program>();
+    builder.Configuration.AddJsonFile("appsettings.test.json");
+    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
+
+    keyBytes = Encoding.UTF8.GetBytes(secretKey);
+}
 
 // Add services to the container.
 
