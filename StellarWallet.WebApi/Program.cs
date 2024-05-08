@@ -8,26 +8,15 @@ using StellarWallet.Infrastructure.Stellar;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using StellarWallet.Domain.Interfaces;
+using LaunchDarkly.EventSource;
 
 var builder = WebApplication.CreateBuilder(args);
 
-byte[]? keyBytes;
-
-if (builder.Environment.IsEnvironment("dev"))
-{
-    builder.Configuration.AddUserSecrets<Program>();
-    builder.Configuration.AddJsonFile("appsettings.json");
-    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
-
-    keyBytes = Encoding.UTF8.GetBytes(secretKey);
-} else
-{
-    builder.Configuration.AddUserSecrets<Program>();
-    builder.Configuration.AddJsonFile("appsettings.test.json");
-    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
-
-    keyBytes = Encoding.UTF8.GetBytes(secretKey);
-}
+string jsonFileName = builder.Environment.IsEnvironment("dev") ? "appsettings.json" : "appsettings.test.json";
+builder.Configuration.AddJsonFile(jsonFileName);
+var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").ToString();
+var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
 // Add services to the container.
 
@@ -58,6 +47,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add Tr
 builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddScoped<IJwtService, JwtService>(); // Add JwtService
 builder.Services.AddScoped<IEncryptionService, EncryptionService>(); // Add EncryptionService
+builder.Services.AddScoped<IBlockchainAccountRepository, BlockchainAccountRepository>(); // Add BlockchainAccountRepository
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();
