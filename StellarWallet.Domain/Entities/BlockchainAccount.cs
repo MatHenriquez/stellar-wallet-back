@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace StellarWallet.Domain.Entities
 {
@@ -18,6 +19,7 @@ namespace StellarWallet.Domain.Entities
         [Required(ErrorMessage = "User id is required")]
         public int UserId { get; set; } = userId;
 
-        public User? User { get; set; }
+        [JsonIgnore]
+        public User? User { get; set; } = null;
     }
 }
