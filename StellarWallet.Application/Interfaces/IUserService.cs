@@ -1,5 +1,6 @@
 ﻿using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
+using StellarWallet.Domain.Entities;
 
 namespace StellarWallet.Application.Interfaces
 {
@@ -10,5 +11,6 @@ namespace StellarWallet.Application.Interfaces
         Task<LoggedDto> Add(UserCreationDto user);
         Task Update(UserUpdateDto user);
         Task Delete(int id);
+        Task AddWallet(AddWalletDto wallet, string jwt);
     }
 }

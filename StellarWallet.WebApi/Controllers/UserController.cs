@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
+using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.WebApi.Controllers
@@ -70,5 +73,25 @@ namespace StellarWallet.WebApi.Controllers
             }
             catch (Exception e) { return NotFound(e.Message); }
         }
+
+        [HttpPost("wallet")]
+        [Authorize]
+        public async Task<IActionResult> AddWallet([FromBody] AddWalletDto wallet)
+        {
+            try
+            {
+                string? jwt = await HttpContext.GetTokenAsync("access_token");
+                if (jwt is null)
+                    return Unauthorized();
+                await _userService.AddWallet(wallet, jwt);
+                return Ok();
+            }
+            catch (Exception e) {
+                if (e.Message == "User not found")
+                    return NotFound(e.Message);
+                else
+                    return StatusCode(500, $"Internal server error: {e.Message}");
+            }
+        }  
     }
 }

@@ -8,6 +8,7 @@ using StellarWallet.Infrastructure.Stellar;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using StellarWallet.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,8 @@ if (builder.Environment.IsEnvironment("dev"))
     var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
 
     keyBytes = Encoding.UTF8.GetBytes(secretKey);
-} else
+}
+else
 {
     builder.Configuration.AddUserSecrets<Program>();
     builder.Configuration.AddJsonFile("appsettings.test.json");
@@ -58,6 +60,7 @@ builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add Tr
 builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddScoped<IJwtService, JwtService>(); // Add JwtService
 builder.Services.AddScoped<IEncryptionService, EncryptionService>(); // Add EncryptionService
+builder.Services.AddScoped<IBlockchainAccountRepository, BlockchainAccountRepository>(); // Add BlockchainAccountRepository
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
 builder.Services.AddControllers();

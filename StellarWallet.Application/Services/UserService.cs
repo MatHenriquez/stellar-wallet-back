@@ -3,18 +3,20 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Interfaces;
 using StellarWallet.Domain.Repositories;
 using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService
+    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService, IBlockchainAccountRepository blockchainAccountRepository
         ) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IJwtService _jwtService = jwtService;
         private readonly IEncryptionService _encryptionService = encryptionService;
         private readonly IBlockchainService _stellarService = stellarService;
+        private readonly IBlockchainAccountRepository _blockchainAccountRepository = blockchainAccountRepository;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<UserDto>> GetAll()
@@ -61,6 +63,25 @@ namespace StellarWallet.Application.Services
         {
             await _userRepository.GetById(id);
             await _userRepository.Delete(id);
+        }
+
+        public async Task AddWallet(AddWalletDto wallet, string jwt)
+        {
+            try
+            {
+                string email = _jwtService.DecodeToken(jwt);
+                User foundUser = await _userRepository.GetBy("Email", email) ?? throw new Exception("User not found");
+                BlockchainAccount newAccount = new(wallet.PublicKey, wallet.SecretKey, foundUser.Id)
+                {
+                    User = foundUser
+                };
+                await _blockchainAccountRepository.Add(newAccount);
+                await _userRepository.Update(foundUser);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error adding wallet:" + e.Message);
+            }
         }
     }
 }
