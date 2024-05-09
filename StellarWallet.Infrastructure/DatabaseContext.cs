@@ -28,14 +28,27 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
         {
             var configuration = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.test.json", optional: true)
               .AddJsonFile("appsettings.json", optional: true)
               .Build();
 
             var path = Directory.GetCurrentDirectory();
             var connectionString = configuration.GetConnectionString("StellarWallet");
 
-            optionsBuilder.UseSqlServer(connectionString);
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                optionsBuilder.UseSqlServer(connectionString);
+            }
+            else
+            {
+                configuration = new ConfigurationBuilder()
+               .SetBasePath(Directory.GetCurrentDirectory())
+               .AddJsonFile("appsettings.test.json", optional: true)
+               .Build();
+
+                path = Directory.GetCurrentDirectory();
+                connectionString = configuration.GetConnectionString("StellarWallet");
+                optionsBuilder.UseSqlServer(connectionString);
+            }
         }
     }
 }
