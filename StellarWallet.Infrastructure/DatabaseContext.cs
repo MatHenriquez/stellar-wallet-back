@@ -28,7 +28,8 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
         {
             var configuration = new ConfigurationBuilder()
               .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: false)
+              .AddJsonFile("appsettings.test.json", optional: true)
+              .AddJsonFile("appsettings.json", optional: true)
               .Build();
 
             var path = Directory.GetCurrentDirectory();
