@@ -1,5 +1,4 @@
-﻿﻿using LaunchDarkly.EventSource;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StellarWallet.Domain.Entities;
 
@@ -7,14 +6,8 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 {
     public class DatabaseContext : DbContext
     {
-        private readonly IConfiguration _configuration;
         public DbSet<User> Users { get; set; }
         public DbSet<BlockchainAccount> BlockchainAccounts { get; set; }
-
-        public DatabaseContext(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,8 +26,29 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var connectionString = _configuration.GetConnectionString("StellarWallet");
-            optionsBuilder.UseSqlServer(connectionString);
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
+
+            var configurationBuilder = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory());
+
+            if (File.Exists($"appsettings.{environmentName}.json"))
+            {
+                configurationBuilder.AddJsonFile($"appsettings.{environmentName}.json", optional: false);
+            } else
+            {
+                configurationBuilder.AddJsonFile("appsettings.json", optional: false);
+
+            }
+
+            var configuration = configurationBuilder.Build();
+
+            var connectionString = configuration.GetConnectionString("StellarWallet");
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                optionsBuilder.UseSqlServer(connectionString);
+            }
         }
+
     }
 }
