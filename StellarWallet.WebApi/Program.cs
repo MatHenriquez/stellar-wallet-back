@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using StellarWallet.Domain.Interfaces;
-using LaunchDarkly.EventSource;
 
 var builder = WebApplication.CreateBuilder(args);
 
