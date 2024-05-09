@@ -26,29 +26,29 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var configuration = new ConfigurationBuilder()
-              .SetBasePath(Directory.GetCurrentDirectory())
-              .AddJsonFile("appsettings.json", optional: true)
-              .Build();
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-            var path = Directory.GetCurrentDirectory();
-            var connectionString = configuration.GetConnectionString("StellarWallet");
-
-            if (!string.IsNullOrEmpty(connectionString))
+            if (environmentName == "dev")
             {
+                var configuration = new ConfigurationBuilder()
+                 .SetBasePath(Directory.GetCurrentDirectory())
+                 .AddJsonFile("appsettings.json", optional: false)
+                 .Build();
+
+                var connectionString = configuration.GetConnectionString("StellarWallet");
                 optionsBuilder.UseSqlServer(connectionString);
             }
             else
             {
-                configuration = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.test.json", optional: true)
-               .Build();
+                var configuration = new ConfigurationBuilder()
+                     .SetBasePath(Directory.GetCurrentDirectory())
+                     .AddJsonFile("appsettings.test.json", optional: true)
+                     .Build();
 
-                path = Directory.GetCurrentDirectory();
-                connectionString = configuration.GetConnectionString("StellarWallet");
+                var connectionString = configuration.GetConnectionString("StellarWallet");
                 optionsBuilder.UseSqlServer(connectionString);
             }
         }
+
     }
 }
