@@ -60,6 +60,8 @@ builder.Services.AddScoped<ITransactionService, TransactionService>(); // Add Tr
 builder.Services.AddScoped<IAuthService, AuthService>(); // Add AuthService
 builder.Services.AddScoped<IJwtService, JwtService>(); // Add JwtService
 builder.Services.AddScoped<IEncryptionService, EncryptionService>(); // Add EncryptionService
+builder.Services.AddScoped<IUserContactRepository, UserContactRepository>(); // Add UserContactRepository
+builder.Services.AddScoped<IUserContactService, UserContactService>(); // Add UserContactService
 builder.Services.AddScoped<IBlockchainAccountRepository, BlockchainAccountRepository>(); // Add BlockchainAccountRepository
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
 
