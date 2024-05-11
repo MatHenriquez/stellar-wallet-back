@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
-using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.WebApi.Controllers
 {

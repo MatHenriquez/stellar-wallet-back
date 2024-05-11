@@ -21,18 +21,13 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
                 .IsUnique();
 
             modelBuilder.Entity<UserContact>()
-                .HasIndex(uc => new { uc.UserId, uc.BlockchainAccountId })
+                .HasIndex(uc => uc.UserId)
                 .IsUnique();
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.BlockchainAccounts)
                 .WithOne(b => b.User)
                 .HasForeignKey(b => b.UserId);
-
-            modelBuilder.Entity<UserContact>()
-                .HasOne(uc => uc.BlockchainAccount)
-                .WithOne(ba => ba.UserContact)
-                .HasForeignKey<UserContact>(uc => uc.BlockchainAccountId);
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.UserContacts)

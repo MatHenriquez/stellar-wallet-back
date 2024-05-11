@@ -14,7 +14,7 @@ namespace StellarWallet.Application.Services
         public async Task Add(AddContactDto userContact)
         {
             _ = await _userService.GetById(userContact.UserId) ?? throw new Exception("User not found");
-            await _userContactRepository.Add(new UserContact(userContact.Alias, userContact.UserId, userContact.BlockchainAccountId));
+            await _userContactRepository.Add(new UserContact(userContact.Alias, userContact.UserId));
         }
 
         public async Task Delete(int id)

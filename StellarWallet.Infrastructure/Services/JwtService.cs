@@ -9,7 +9,7 @@ namespace StellarWallet.Application.Services
 {
     public class JwtService(IConfiguration config) : IJwtService
     {
-        private readonly string? secretKey = config.GetSection("settings").GetSection("secretKey").ToString();
+        private readonly string? secretKey = config.GetSection("settings").GetSection("secretKey").Value;
 
         public string CreateToken(string email)
         {
