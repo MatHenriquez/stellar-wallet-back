@@ -8,6 +8,7 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
     {
         public DbSet<User> Users { get; set; }
         public DbSet<BlockchainAccount> BlockchainAccounts { get; set; }
+        public DbSet<UserContact> UserContacts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,6 +23,16 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
             modelBuilder.Entity<BlockchainAccount>()
                 .HasIndex(b => b.PublicKey)
                 .IsUnique();
+
+            modelBuilder.Entity<UserContact>()
+                .HasOne(uc => uc.User)
+                .WithMany(u => u.UserContacts)
+                .HasForeignKey(uc => uc.UserId);
+
+            modelBuilder.Entity<UserContact>()
+                .HasOne(uc => uc.BlockchainAccount)
+                .WithOne(ba => ba.UserContact)
+                .HasForeignKey<UserContact>(uc => uc.BlockchainAccountId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -34,7 +45,8 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
             if (File.Exists($"appsettings.{environmentName}.json"))
             {
                 configurationBuilder.AddJsonFile($"appsettings.{environmentName}.json", optional: false);
-            } else
+            }
+            else
             {
                 configurationBuilder.AddJsonFile("appsettings.json", optional: false);
 
