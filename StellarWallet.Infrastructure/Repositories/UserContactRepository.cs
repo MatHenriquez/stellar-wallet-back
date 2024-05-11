@@ -13,6 +13,7 @@ namespace StellarWallet.Infrastructure.Repositories
         public async Task Add(UserContact userContact)
         {
             await _context.UserContacts.AddAsync(userContact);
+            await _context.SaveChangesAsync();
         }
 
         public async Task Delete(int id)
