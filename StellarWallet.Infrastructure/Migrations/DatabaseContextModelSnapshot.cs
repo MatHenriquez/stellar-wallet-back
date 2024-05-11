@@ -96,6 +96,36 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("StellarWallet.Domain.Entities.UserContact", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Alias")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("BlockchainAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockchainAccountId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "BlockchainAccountId")
+                        .IsUnique();
+
+                    b.ToTable("UserContacts");
+                });
+
             modelBuilder.Entity("StellarWallet.Domain.Entities.BlockchainAccount", b =>
                 {
                     b.HasOne("StellarWallet.Domain.Entities.User", "User")
@@ -107,9 +137,35 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("StellarWallet.Domain.Entities.UserContact", b =>
+                {
+                    b.HasOne("StellarWallet.Domain.Entities.BlockchainAccount", "BlockchainAccount")
+                        .WithOne("UserContact")
+                        .HasForeignKey("StellarWallet.Domain.Entities.UserContact", "BlockchainAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("StellarWallet.Domain.Entities.User", "User")
+                        .WithMany("UserContacts")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("BlockchainAccount");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StellarWallet.Domain.Entities.BlockchainAccount", b =>
+                {
+                    b.Navigation("UserContact");
+                });
+
             modelBuilder.Entity("StellarWallet.Domain.Entities.User", b =>
                 {
                     b.Navigation("BlockchainAccounts");
+
+                    b.Navigation("UserContacts");
                 });
 #pragma warning restore 612, 618
         }

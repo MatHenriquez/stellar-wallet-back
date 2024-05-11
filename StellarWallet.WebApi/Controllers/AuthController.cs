@@ -4,6 +4,8 @@ using StellarWallet.Application.Interfaces;
 
 namespace StellarWallet.WebApi.Controllers
 {
+    [ApiController]
+    [Route("[controller]")]
     public class AuthController(IAuthService authService) : ControllerBase
     {
         private readonly IAuthService _authService = authService;
