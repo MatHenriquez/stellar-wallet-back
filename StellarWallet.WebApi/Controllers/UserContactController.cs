@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
 
@@ -41,11 +43,16 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPost()]
+        [Authorize]
         public async Task<IActionResult> Post(AddContactDto userContact)
         {
             try
             {
-                await _userContactService.Add(userContact);
+                string? jwt = await HttpContext.GetTokenAsync("access_token");
+                if (jwt is null)
+                    return Unauthorized();
+
+                await _userContactService.Add(userContact, jwt);
                 return Ok();
             }
             catch (Exception e)
