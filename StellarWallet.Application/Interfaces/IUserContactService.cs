@@ -11,7 +11,7 @@ namespace StellarWallet.Application.Interfaces
     public  interface IUserContactService
     {
         Task<IEnumerable<UserContactsDto>> GetAll(int id);
-        Task Add(AddContactDto userContact);
+        Task Add(AddContactDto userContact, string jwt);
         Task Update(UpdateContactDto userContact);
         Task Delete(int id);
     }

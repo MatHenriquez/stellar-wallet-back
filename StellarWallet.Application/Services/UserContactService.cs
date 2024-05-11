@@ -3,18 +3,22 @@ using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Interfaces;
+using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserContactService(IUserContactRepository userContactRepository, IUserService userService) : IUserContactService
+    public class UserContactService(IUserContactRepository userContactRepository, IUserService userService, IUserRepository userRepository, IJwtService jwtService) : IUserContactService
     {
         private readonly IUserContactRepository _userContactRepository = userContactRepository;
         private readonly IUserService _userService = userService;
+        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IJwtService _jwtService = jwtService;
 
-        public async Task Add(AddContactDto userContact)
+        public async Task Add(AddContactDto userContact, string jwt)
         {
-            _ = await _userService.GetById(userContact.UserId) ?? throw new Exception("User not found");
-            await _userContactRepository.Add(new UserContact(userContact.Alias, userContact.UserId));
+            string userEmail = _jwtService.DecodeToken(jwt);
+           User foundUser = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            await _userContactRepository.Add(new UserContact(userContact.Alias, foundUser.Id));
         }
 
         public async Task Delete(int id)
