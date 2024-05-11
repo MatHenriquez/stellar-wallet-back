@@ -35,5 +35,7 @@ namespace StellarWallet.Domain.Entities
         public string SecretKey { get; set; } = secretKey;
 
         public ICollection<BlockchainAccount>? BlockchainAccounts { get; set; } = null;
+
+        public ICollection<UserContact>? UserContacts { get; set; } = null;
     }
 }

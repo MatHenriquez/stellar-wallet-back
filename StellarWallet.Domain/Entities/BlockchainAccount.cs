@@ -21,5 +21,8 @@ namespace StellarWallet.Domain.Entities
 
         [JsonIgnore]
         public User? User { get; set; } = null;
+
+        [JsonIgnore]
+        public UserContact? UserContact { get; set; } = null;
     }
 }
