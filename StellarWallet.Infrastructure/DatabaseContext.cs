@@ -21,7 +21,7 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
                 .IsUnique();
 
             modelBuilder.Entity<UserContact>()
-                .HasIndex(uc => uc.UserId)
+                .HasIndex(uc => uc.Id)
                 .IsUnique();
 
             modelBuilder.Entity<User>()
