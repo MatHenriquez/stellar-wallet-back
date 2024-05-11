@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace StellarWallet.Domain.Entities
 {
-    public class UserContact(string alias, int userId, int blockchainAccountId)
+    public class UserContact(string alias, int userId)
     {
         [Key]
         public int Id { get; private set; }
@@ -15,13 +15,7 @@ namespace StellarWallet.Domain.Entities
         [Required(ErrorMessage = "User id is required")]
         public int UserId { get; set; } = userId;
 
-        [Required(ErrorMessage = "BlockchainAccount id is required")]
-        public int BlockchainAccountId { get; set; } = blockchainAccountId;
-
         [JsonIgnore]
         public User? User { get; set; } = null;
-
-        [JsonIgnore]
-        public BlockchainAccount? BlockchainAccount { get; set; } = null;
     }
 }
