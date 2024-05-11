@@ -30,7 +30,13 @@ namespace StellarWallet.Infrastructure.Repositories
 
         public async Task<IEnumerable<UserContact>> GetAll(int userId)
         {
-            return await _context.UserContacts.Where(uc => uc.UserId == userId).ToListAsync();
+            try
+            {
+                return await _context.UserContacts.Where(uc => uc.UserId == userId).ToListAsync();
+            } catch (Exception e)
+            {
+                throw new Exception("Error getting user contacts", e);
+            }
         }
 
         public Task Update(UserContact userContact)

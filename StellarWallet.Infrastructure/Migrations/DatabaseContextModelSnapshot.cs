@@ -120,7 +120,8 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.HasIndex("BlockchainAccountId")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "BlockchainAccountId")
+                        .IsUnique();
 
                     b.ToTable("UserContacts");
                 });
@@ -147,7 +148,7 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.HasOne("StellarWallet.Domain.Entities.User", "User")
                         .WithMany("UserContacts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("BlockchainAccount");

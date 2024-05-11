@@ -11,8 +11,8 @@ using StellarWallet.Infrastructure.DatabaseConnection;
 namespace StellarWallet.Infrastructure.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240510232851_UserContacts")]
-    partial class UserContacts
+    [Migration("20240511011131_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -123,7 +123,8 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.HasIndex("BlockchainAccountId")
                         .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "BlockchainAccountId")
+                        .IsUnique();
 
                     b.ToTable("UserContacts");
                 });
@@ -150,7 +151,7 @@ namespace StellarWallet.Infrastructure.Migrations
                     b.HasOne("StellarWallet.Domain.Entities.User", "User")
                         .WithMany("UserContacts")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("BlockchainAccount");

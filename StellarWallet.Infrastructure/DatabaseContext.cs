@@ -16,23 +16,29 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            modelBuilder.Entity<User>().HasMany(u => u.BlockchainAccounts)
-                .WithOne(b => b.User)
-                .HasForeignKey(b => b.UserId);
-
             modelBuilder.Entity<BlockchainAccount>()
                 .HasIndex(b => b.PublicKey)
                 .IsUnique();
 
             modelBuilder.Entity<UserContact>()
-                .HasOne(uc => uc.User)
-                .WithMany(u => u.UserContacts)
-                .HasForeignKey(uc => uc.UserId);
+                .HasIndex(uc => new { uc.UserId, uc.BlockchainAccountId })
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.BlockchainAccounts)
+                .WithOne(b => b.User)
+                .HasForeignKey(b => b.UserId);
 
             modelBuilder.Entity<UserContact>()
                 .HasOne(uc => uc.BlockchainAccount)
                 .WithOne(ba => ba.UserContact)
                 .HasForeignKey<UserContact>(uc => uc.BlockchainAccountId);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.UserContacts)
+                .WithOne(uc => uc.User)
+                .HasForeignKey(uc => uc.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
