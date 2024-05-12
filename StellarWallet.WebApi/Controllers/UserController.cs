@@ -14,12 +14,14 @@ namespace StellarWallet.WebApi.Controllers
         private readonly IUserService _userService = userService;
 
         [HttpGet()]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Get()
         {
             return Ok(await _userService.GetAll());
         }
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> Get(int id)
         {
             try
@@ -49,6 +51,7 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPut()]
+        [Authorize]
         public async Task<IActionResult> Put(UserUpdateDto user)
         {
             try
@@ -61,6 +64,7 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try

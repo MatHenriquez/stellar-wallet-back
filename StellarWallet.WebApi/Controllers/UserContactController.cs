@@ -14,6 +14,7 @@ namespace StellarWallet.WebApi.Controllers
         private readonly IUserContactService _userContactService = userContactService;
 
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetAll(int id)
         {
             try
@@ -30,6 +31,7 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -68,6 +70,7 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPut()]
+        [Authorize]
         public async Task<IActionResult> Put(UpdateContactDto userContact)
         {
             try
