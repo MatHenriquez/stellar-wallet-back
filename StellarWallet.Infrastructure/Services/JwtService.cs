@@ -11,7 +11,7 @@ namespace StellarWallet.Application.Services
     {
         private readonly string? secretKey = config.GetSection("settings").GetSection("secretKey").Value;
 
-        public string CreateToken(string email)
+        public string CreateToken(string email, string role)
         {
             if (secretKey == null)
                 throw new Exception("Secret key not found");
@@ -20,6 +20,7 @@ namespace StellarWallet.Application.Services
             var claims = new ClaimsIdentity();
 
             claims.AddClaim(new Claim(ClaimTypes.NameIdentifier, email));
+            claims.AddClaim(new Claim(ClaimTypes.Role, role));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -54,10 +55,16 @@ namespace StellarWallet.Application.Services
                 var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out _);
 
                 var allClaims = claimsPrincipal.Claims.ToList();
-
                 if (allClaims.Count == 0)
                     throw new Exception("No claims found");
-                return allClaims[0].Value;
+
+                var emailClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+                var roleClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+
+                if (emailClaim == null || roleClaim == null)
+                    throw new Exception("Email or role claim not found");
+
+                return emailClaim.Value;
             }
             catch (Exception ex)
             {
