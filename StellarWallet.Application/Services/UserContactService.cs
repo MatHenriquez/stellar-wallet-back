@@ -21,6 +21,10 @@ namespace StellarWallet.Application.Services
             string userEmail = _jwtService.DecodeToken(jwt);
 
             User foundUser = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
+            if(foundUser.UserContacts.Count >= 10)
+                throw new Exception("User has reached the maximum number of contacts");
+
             foreach (UserContact contact in foundUser.UserContacts)
             {
                 if (contact.Alias == userContact.Alias)
