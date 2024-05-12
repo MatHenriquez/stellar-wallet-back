@@ -71,6 +71,13 @@ namespace StellarWallet.Application.Services
             {
                 string email = _jwtService.DecodeToken(jwt);
                 User foundUser = await _userRepository.GetBy("Email", email) ?? throw new Exception("User not found");
+
+                foreach (BlockchainAccount account in foundUser.BlockchainAccounts)
+                {
+                    if (account.PublicKey == wallet.PublicKey)
+                        throw new Exception("Wallet already exists");
+                }
+
                 BlockchainAccount newAccount = new(wallet.PublicKey, wallet.SecretKey, foundUser.Id)
                 {
                     User = foundUser
@@ -80,7 +87,7 @@ namespace StellarWallet.Application.Services
             }
             catch (Exception e)
             {
-                throw new Exception("Error adding wallet:" + e.Message);
+                throw new Exception("Error adding wallet: " + e.Message);
             }
         }
     }
