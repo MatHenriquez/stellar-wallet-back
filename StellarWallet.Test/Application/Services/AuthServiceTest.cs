@@ -35,7 +35,7 @@ namespace StellarWallet.UnitTest.Application.Services
 
             mockEncryptionService.Setup(x => x.Verify(loginDto.Password, "EncryptedPassword")).Returns(true);
 
-            mockJwtService.Setup(x => x.CreateToken("john.doe@mail.com")).Returns("token");
+            mockJwtService.Setup(x => x.CreateToken("john.doe@mail.com", "user")).Returns("token");
 
             // Act
             var result = await sut.Login(loginDto);
