@@ -12,6 +12,8 @@ namespace StellarWallet.Application.Mappers
             CreateMap<User, UserDto>();
             CreateMap<UserCreationDto, User>();
             CreateMap<UserUpdateDto, User>();
+            CreateMap<UserContact, UserContactsDto>();
+            CreateMap<BlockchainAccount, BlockchainAccountDto>();
         }
     }
 }
