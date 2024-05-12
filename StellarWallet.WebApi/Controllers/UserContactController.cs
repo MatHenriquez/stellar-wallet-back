@@ -57,7 +57,10 @@ namespace StellarWallet.WebApi.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, $"Internal server error: {e.Message}");
+                if (e.Message == "Contact already exists")
+                    return Conflict(e.Message);
+                else
+                    return StatusCode(500, $"Internal server error: {e.Message}");
             }
         }
 
