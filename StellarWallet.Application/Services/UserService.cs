@@ -45,7 +45,7 @@ namespace StellarWallet.Application.Services
 
             await _userRepository.Add(_mapper.Map<User>(user));
 
-            string createdToken = _jwtService.CreateToken(user.Email);
+            string createdToken = _jwtService.CreateToken(user.Email, foundUser.Role);
 
             return new LoggedDto(true, createdToken, user.PublicKey);
         }
@@ -72,14 +72,17 @@ namespace StellarWallet.Application.Services
                 string email = _jwtService.DecodeToken(jwt);
                 User foundUser = await _userRepository.GetBy("Email", email) ?? throw new Exception("User not found");
 
-                foreach (BlockchainAccount account in foundUser.BlockchainAccounts)
+                if (foundUser.BlockchainAccounts is not null)
                 {
-                    if (account.PublicKey == wallet.PublicKey)
-                        throw new Exception("Wallet already exists");
-                }
+                    foreach (BlockchainAccount account in foundUser.BlockchainAccounts)
+                    {
+                        if (account.PublicKey == wallet.PublicKey)
+                            throw new Exception("Wallet already exists");
+                    }
 
-                if(foundUser.BlockchainAccounts.Count >= 5)
-                    throw new Exception("User already has 5 wallets");
+                    if (foundUser.BlockchainAccounts.Count >= 5)
+                        throw new Exception("User already has 5 wallets");
+                }
 
                 BlockchainAccount newAccount = new(wallet.PublicKey, wallet.SecretKey, foundUser.Id)
                 {

@@ -18,7 +18,7 @@ namespace StellarWallet.Application.Services
             if (!_encryptionService.Verify(loginDto.Password, user.Password))
                 throw new Exception("Invalid credentials");
 
-            string createdToken = _jwtService.CreateToken(user.Email);
+            string createdToken = _jwtService.CreateToken(user.Email, user.Role);
 
             return new LoggedDto(true, createdToken, user.PublicKey);
         }

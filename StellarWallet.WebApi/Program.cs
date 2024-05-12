@@ -1,14 +1,15 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Application.Mappers;
 using StellarWallet.Application.Services;
+using StellarWallet.Domain.Interfaces;
 using StellarWallet.Domain.Repositories;
 using StellarWallet.Infrastructure.DatabaseConnection;
 using StellarWallet.Infrastructure.Repositories;
 using StellarWallet.Infrastructure.Stellar;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
-using StellarWallet.Domain.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,11 @@ builder.Services.AddAuthentication(config =>
         ValidateAudience = false
     };
 });
+
+// Add roles authorization
+builder.Services.AddAuthorizationBuilder()
+                              .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "admin"))
+                              .AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "user"));
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DatabaseContext>(); // Add DatabaseContext

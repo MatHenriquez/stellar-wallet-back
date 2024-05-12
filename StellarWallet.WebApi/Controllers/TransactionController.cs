@@ -34,6 +34,7 @@ namespace StellarWallet.WebApi.Controllers
         }
 
         [HttpPost("Payment")]
+        [Authorize]
         public async Task<IActionResult> SendPayment([FromBody] SendPaymentDto sendPaymentDto)
         {
             try
