@@ -78,6 +78,9 @@ namespace StellarWallet.Application.Services
                         throw new Exception("Wallet already exists");
                 }
 
+                if(foundUser.BlockchainAccounts.Count >= 5)
+                    throw new Exception("User already has 5 wallets");
+
                 BlockchainAccount newAccount = new(wallet.PublicKey, wallet.SecretKey, foundUser.Id)
                 {
                     User = foundUser

@@ -89,6 +89,8 @@ namespace StellarWallet.WebApi.Controllers
                     return NotFound(e.Message);
                 else if (e.Message == "Error adding wallet: Wallet already exists")
                     return Conflict(e.Message);
+                else if (e.Message == "Error adding wallet: User already has 5 wallets")
+                    return Conflict(e.Message);
                 else
                     return StatusCode(500, $"Internal server error: {e.Message}");
             }
