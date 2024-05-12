@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
@@ -57,7 +58,12 @@ namespace StellarWallet.WebApi.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(500, $"Internal server error: {e.Message}");
+                if (e.Message == "Contact already exists")
+                    return Conflict(e.Message);
+                else if (e.Message == "User has reached the maximum number of contacts")
+                    return Conflict(e.Message);
+                else
+                    return StatusCode(500, $"Internal server error: {e.Message}");
             }
         }
 

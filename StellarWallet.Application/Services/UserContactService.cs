@@ -19,7 +19,18 @@ namespace StellarWallet.Application.Services
         public async Task Add(AddContactDto userContact, string jwt)
         {
             string userEmail = _jwtService.DecodeToken(jwt);
+
             User foundUser = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
+            if(foundUser.UserContacts.Count >= 10)
+                throw new Exception("User has reached the maximum number of contacts");
+
+            foreach (UserContact contact in foundUser.UserContacts)
+            {
+                if (contact.Alias == userContact.Alias)
+                    throw new Exception("Contact already exists");
+            }
+
             await _userContactRepository.Add(new UserContact(userContact.Alias, foundUser.Id, userContact.PublicKey));
         }
 
