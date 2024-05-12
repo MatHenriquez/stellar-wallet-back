@@ -27,13 +27,16 @@ namespace StellarWallet.Infrastructure.Repositories
         {
             return await _context.Users.Include(
                 u => u.BlockchainAccounts
-                ).ToListAsync();
+                ).Include(
+                u => u.UserContacts)
+                .ToListAsync();
         }
 
         public async Task<User> GetById(int id)
         {
             User? foundUser = await _context.Users
                 .Include(u => u.BlockchainAccounts)
+                .Include(u => u.UserContacts)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             return foundUser is null ? throw new Exception("User not found") : foundUser;
@@ -42,7 +45,7 @@ namespace StellarWallet.Infrastructure.Repositories
         public async Task<User?> GetBy(string paramName, string paramValue)
         {
             var propertyInfo = typeof(User).GetProperty(paramName) ?? throw new ArgumentException($"Invalid property: '{paramName}'.");
-            var query = _context.Users.Where(u => EF.Property<string>(u, propertyInfo.Name) == paramValue).Include(u => u.BlockchainAccounts);
+            var query = _context.Users.Where(u => EF.Property<string>(u, propertyInfo.Name) == paramValue).Include(u => u.BlockchainAccounts).Include(u => u.UserContacts);
 
             try
             {
