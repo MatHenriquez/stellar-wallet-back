@@ -4,14 +4,24 @@ using stellar_dotnet_sdk.responses.operations;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Repositories;
 using StellarWallet.Domain.Structs;
+using StellarWallet.Infrastructure.Utilities;
 
 namespace StellarWallet.Infrastructure.Stellar
 {
     public class StellarService : IBlockchainService
     {
-        private readonly string testnetUrl = "https://horizon-testnet.stellar.org";
-        private readonly Network network = new("Test SDF Network ; September 2015");
-        private readonly Server server = new Server("https://horizon-testnet.stellar.org");
+        private readonly string EnvironmentName;
+        private readonly string horizonUrl;
+        private readonly Network network;
+        private readonly Server server;
+
+        public StellarService()
+        {
+            EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
+            horizonUrl = AppSettingsVariables.GetSettingVariable(StellarConstants.Section, StellarConstants.HorizonUrl, EnvironmentName);
+            network = new Network(AppSettingsVariables.GetSettingVariable(StellarConstants.Section, StellarConstants.Passphrase, EnvironmentName));
+            server = new Server(AppSettingsVariables.GetSettingVariable(StellarConstants.Section, StellarConstants.HorizonUrl, EnvironmentName));
+        }
 
         public BlockchainAccount CreateAccount(int userId)
         {
@@ -108,7 +118,7 @@ namespace StellarWallet.Infrastructure.Stellar
         {
             try
             {
-                var friendBotRequest = new HttpRequestMessage(HttpMethod.Get, $"{testnetUrl}/friendbot?addr={accountId}");
+                var friendBotRequest = new HttpRequestMessage(HttpMethod.Get, $"{horizonUrl}/friendbot?addr={accountId}");
                 var response = await new HttpClient().SendAsync(friendBotRequest);
 
                 return response.IsSuccessStatusCode;

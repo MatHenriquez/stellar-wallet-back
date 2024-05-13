@@ -1,6 +1,13 @@
 {
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "StellarWallet": "Server=<your_server>;Database=<your_db_name>;<extra_credentials>"
+    "StellarWallet": "Server=(localdb)\\CFServer;Database=StellarWallet;"
+  },
+  "settings": {
+    "secretKey": "secret123456789secret123456789secret123456789"
+  },
+  "Stellar": {
+    "HorizonUrl": "https://horizon-testnet.stellar.org",
+    "Passphrase": "Test SDF Network ; September 2015"
   }
 }
