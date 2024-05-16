@@ -8,13 +8,20 @@ using StellarWallet.Domain.Repositories;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserContactService(IUserContactRepository userContactRepository, IUserService userService, IUserRepository userRepository, IJwtService jwtService, IMapper mapper) : IUserContactService
+    public class UserContactService(IUserContactRepository userContactRepository, IUserService userService, IUserRepository userRepository, IJwtService jwtService, IMapper mapper, IAuthService authService) : IUserContactService
     {
         private readonly IUserContactRepository _userContactRepository = userContactRepository;
         private readonly IUserService _userService = userService;
         private readonly IUserRepository _userRepository = userRepository;
         private readonly IJwtService _jwtService = jwtService;
+        private readonly IAuthService _authService = authService;
         private readonly IMapper _mapper = mapper;
+
+        private void AuthenticateUserEmail(string jwt, string email)
+        {
+            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
+            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
+        }
 
         public async Task Add(AddContactDto userContact, string jwt)
         {
@@ -22,7 +29,9 @@ namespace StellarWallet.Application.Services
 
             User foundUser = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
 
-            if(foundUser.UserContacts?.Count >= 10)
+            AuthenticateUserEmail(jwt, foundUser.Email);
+
+            if (foundUser.UserContacts?.Count >= 10)
                 throw new Exception("User has reached the maximum number of contacts");
 
             if(foundUser.UserContacts is not null)
@@ -40,9 +49,12 @@ namespace StellarWallet.Application.Services
             await _userContactRepository.Delete(id);
         }
 
-        public async Task<IEnumerable<UserContactsDto>> GetAll(int userId)
+        public async Task<IEnumerable<UserContactsDto>> GetAll(int userId, string jwt)
         {
-            var user = await _userService.GetById(userId) ?? throw new Exception("User not found");
+            var foundUser = await _userService.GetById(userId, jwt) ?? throw new Exception("User not found");
+
+            AuthenticateUserEmail(jwt, foundUser.Email);
+
             IEnumerable<UserContact> userContacts = await _userContactRepository.GetAll(userId);
 
             return _mapper.Map<UserContactsDto[]>(userContacts);
