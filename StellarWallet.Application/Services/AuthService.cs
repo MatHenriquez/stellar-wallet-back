@@ -22,5 +22,12 @@ namespace StellarWallet.Application.Services
 
             return new LoggedDto(true, createdToken, user.PublicKey);
         }
+
+        public bool AuthenticateEmail(string jwt, string email)
+        {
+            string jwtEmail = _jwtService.DecodeToken(jwt) ?? throw new Exception("Unauthorized");
+
+            return jwtEmail.Equals(email);
+        }
     }
 }
