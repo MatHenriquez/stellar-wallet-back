@@ -9,13 +9,12 @@ namespace StellarWallet.Application.Services
 {
     public class JwtService(IConfiguration config) : IJwtService
     {
-        private readonly string? secretKey = config.GetSection("settings").GetSection("secretKey").Value;
+        private readonly string secretKey = config.GetSection("Jwt").GetSection("Key").Value ?? throw new Exception("Secret key not found");
+        private readonly string issuer = config.GetSection("Jwt").GetSection("Issuer").Value ?? throw new Exception("Issuer not found");
+        private readonly string audience = config.GetSection("Jwt").GetSection("Audience").Value ?? throw new Exception("Audience not found");
 
         public string CreateToken(string email, string role)
         {
-            if (secretKey == null)
-                throw new Exception("Secret key not found");
-
             var keyBytes = Encoding.ASCII.GetBytes(secretKey);
             var claims = new ClaimsIdentity();
 
@@ -26,7 +25,9 @@ namespace StellarWallet.Application.Services
             {
                 Subject = claims,
                 Expires = DateTime.UtcNow.AddYears(100),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature),
+                Issuer = issuer,
+                Audience = audience
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenConfig = tokenHandler.CreateToken(tokenDescriptor);
