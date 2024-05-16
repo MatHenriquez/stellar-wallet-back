@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Infrastructure.Utilities;
 
 namespace StellarWallet.Infrastructure.DatabaseConnection
 {
@@ -38,30 +39,11 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
-
-            var configurationBuilder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory());
-
-            if (File.Exists($"appsettings.{environmentName}.json"))
-            {
-                configurationBuilder.AddJsonFile($"appsettings.{environmentName}.json", optional: false);
-            }
-            else
-            {
-                configurationBuilder.AddJsonFile("appsettings.json", optional: false);
-
-            }
-
-            var configuration = configurationBuilder.Build();
-
-            var connectionString = configuration.GetConnectionString("StellarWallet");
+            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
+            string connectionString = AppSettingsVariables.GetConnectionString(environment);
 
             if (!string.IsNullOrEmpty(connectionString))
-            {
                 optionsBuilder.UseSqlServer(connectionString);
-            }
         }
-
     }
 }
