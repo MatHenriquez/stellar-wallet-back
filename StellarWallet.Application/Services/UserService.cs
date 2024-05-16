@@ -45,9 +45,7 @@ namespace StellarWallet.Application.Services
 
             await _userRepository.Add(_mapper.Map<User>(user));
 
-            string createdToken = _jwtService.CreateToken(user.Email, foundUser.Role);
-
-            return new LoggedDto(true, createdToken, user.PublicKey);
+            return new LoggedDto(true, null, user.PublicKey);
         }
 
         public async Task Update(UserUpdateDto user)
