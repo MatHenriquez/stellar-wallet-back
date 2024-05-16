@@ -11,26 +11,12 @@ using StellarWallet.Infrastructure.Stellar;
 using System.Security.Claims;
 using System.Text;
 
+string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
+
 var builder = WebApplication.CreateBuilder(args);
 
-byte[]? keyBytes;
-
-if (builder.Environment.IsEnvironment("dev"))
-{
-    builder.Configuration.AddUserSecrets<Program>();
-    builder.Configuration.AddJsonFile("appsettings.json");
-    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
-
-    keyBytes = Encoding.UTF8.GetBytes(secretKey);
-}
-else
-{
-    builder.Configuration.AddUserSecrets<Program>();
-    builder.Configuration.AddJsonFile("appsettings.test.json");
-    var secretKey = builder.Configuration.GetSection("settings").GetSection("secretKey").Value ?? throw new Exception("Secret key not found");
-
-    keyBytes = Encoding.UTF8.GetBytes(secretKey);
-}
+builder.Configuration.AddUserSecrets<Program>();
+builder.Configuration.AddJsonFile($"appsettings.{environmentName}.json");
 
 // Add services to the container.
 
@@ -46,9 +32,13 @@ builder.Services.AddAuthentication(config =>
     config.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-        ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
     };
 });
 
