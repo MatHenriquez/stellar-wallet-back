@@ -19,12 +19,15 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                return Ok(await _userContactService.GetAll(id));
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+                return Ok(await _userContactService.GetAll(id, jwt));
             }
             catch (Exception e)
             {
                 if (e.Message == "User contact not found")
                     return NotFound(e.Message);
+                else if (e.Message == "Unauthorized")
+                    return Unauthorized();
                 else
                     return StatusCode(500, $"Internal server error: {e.Message}");
             }

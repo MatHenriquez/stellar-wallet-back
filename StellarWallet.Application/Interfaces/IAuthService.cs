@@ -6,5 +6,6 @@ namespace StellarWallet.Application.Interfaces
     public interface IAuthService
     {
         Task<LoggedDto> Login(LoginDto loginDto);
+        bool AuthenticateEmail(string jwt, string email);
     }
 }

@@ -9,7 +9,7 @@ using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService, IBlockchainAccountRepository blockchainAccountRepository
+    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService, IBlockchainAccountRepository blockchainAccountRepository, IAuthService authService
         ) : IUserService
     {
         private readonly IUserRepository _userRepository = userRepository;
@@ -17,6 +17,7 @@ namespace StellarWallet.Application.Services
         private readonly IEncryptionService _encryptionService = encryptionService;
         private readonly IBlockchainService _stellarService = stellarService;
         private readonly IBlockchainAccountRepository _blockchainAccountRepository = blockchainAccountRepository;
+        private readonly IAuthService _authService = authService;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<UserDto>> GetAll()
@@ -25,9 +26,18 @@ namespace StellarWallet.Application.Services
             return _mapper.Map<UserDto[]>(users);
         }
 
-        public async Task<UserDto> GetById(int id)
+        private void AuthenticateUserEmail(string jwt, string email)
+        {
+            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
+            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
+        }
+
+        public async Task<UserDto> GetById(int id, string jwt)
         {
             User foundUser = await _userRepository.GetById(id);
+
+            AuthenticateUserEmail(jwt, foundUser.Email);
+
             return _mapper.Map<UserDto>(foundUser);
         }
 
@@ -48,18 +58,22 @@ namespace StellarWallet.Application.Services
             return new LoggedDto(true, null, user.PublicKey);
         }
 
-        public async Task Update(UserUpdateDto user)
+        public async Task Update(UserUpdateDto user, string jwt)
         {
             if (user.Password is not null)
                 user.Password = _encryptionService.Encrypt(user.Password);
 
-            await _userRepository.GetById(user.Id);
+            User foundUser = await _userRepository.GetById(user.Id);
+
+            AuthenticateUserEmail(jwt, foundUser.Email);
+
             await _userRepository.Update(_mapper.Map<User>(user));
         }
 
-        public async Task Delete(int id)
+        public async Task Delete(int id, string jwt)
         {
-            await _userRepository.GetById(id);
+            User foundUser = await _userRepository.GetById(id);
+            AuthenticateUserEmail(jwt, foundUser.Email);
             await _userRepository.Delete(id);
         }
 
@@ -69,6 +83,8 @@ namespace StellarWallet.Application.Services
             {
                 string email = _jwtService.DecodeToken(jwt);
                 User foundUser = await _userRepository.GetBy("Email", email) ?? throw new Exception("User not found");
+
+                AuthenticateUserEmail(jwt, foundUser.Email);
 
                 if (foundUser.BlockchainAccounts is not null)
                 {

@@ -8,7 +8,7 @@ namespace StellarWallet.Application.Interfaces
     public interface ITransactionService
     {
         public Task<BlockchainAccount> CreateAccount(string jwt);
-        public Task<bool> SendPayment(SendPaymentDto sendPaymentDto);
+        public Task<bool> SendPayment(SendPaymentDto sendPaymentDto, string jwt);
         public Task<BlockchainPayment[]> GetTransaction(string jwt, int pageNumber, int pageSize);
         public Task<bool> GetTestFunds(string publicKey);
         public Task<FoundBalancesDto> GetBalances(GetBalancesDto publicKey);

@@ -7,11 +7,18 @@ using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
 {
-    public class TransactionService(IBlockchainService blockchainService, IUserRepository userRepository, IJwtService jwtService) : ITransactionService
+    public class TransactionService(IBlockchainService blockchainService, IUserRepository userRepository, IJwtService jwtService, IAuthService authService) : ITransactionService
     {
         private readonly IBlockchainService _blockchainService = blockchainService;
         private readonly IJwtService _jwtService = jwtService;
         private readonly IUserRepository _userRepository = userRepository;
+        private readonly IAuthService _authService = authService;
+
+        private void AuthenticateUserEmail(string jwt, string email)
+        {
+            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
+            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
+        }
 
         public async Task<BlockchainAccount> CreateAccount(string jwt)
         {
@@ -20,10 +27,12 @@ namespace StellarWallet.Application.Services
             return _blockchainService.CreateAccount(user.Id);
         }
 
-        public async Task<bool> SendPayment(SendPaymentDto sendPaymentDto)
+        public async Task<bool> SendPayment(SendPaymentDto sendPaymentDto, string jwt)
         {
-            string userEmail = _jwtService.DecodeToken(sendPaymentDto.UserToken);
+            string userEmail = _jwtService.DecodeToken(jwt);
             User user = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
+            AuthenticateUserEmail(jwt, user.Email);
 
             bool transactionCompleted = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
 
@@ -37,6 +46,8 @@ namespace StellarWallet.Application.Services
         {
             string userEmail = _jwtService.DecodeToken(jwt);
             User user = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+
+            AuthenticateUserEmail(jwt, user.Email);
 
             BlockchainPayment[] allPayments = await _blockchainService.GetPayments(user.PublicKey);
 

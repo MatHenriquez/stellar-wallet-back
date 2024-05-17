@@ -18,9 +18,7 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                string? jwt = await HttpContext.GetTokenAsync("access_token");
-                if (jwt is null)
-                    return Unauthorized();
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
 
                 return Ok(_transactionService.CreateAccount(jwt));
             }
@@ -28,6 +26,8 @@ namespace StellarWallet.WebApi.Controllers
             {
                 if (e.Message == "User not found")
                     return NotFound(e.Message);
+                else if (e.Message == "Unauthorized")
+                    return Unauthorized();
 
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
@@ -39,13 +39,16 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                await _transactionService.SendPayment(sendPaymentDto);
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+                await _transactionService.SendPayment(sendPaymentDto, jwt);
                 return Ok();
             }
             catch (Exception e)
             {
                 if (e.Message == "User not found")
                     return NotFound(e.Message);
+                else if (e.Message == "Unauthorized")
+                    return Unauthorized();
 
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
@@ -57,9 +60,7 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                string? jwt = await HttpContext.GetTokenAsync("access_token");
-                if (jwt is null)
-                    return Unauthorized();
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
 
                 return Ok(await _transactionService.GetTransaction(jwt, pageNumber, pageSize));
             }
@@ -67,6 +68,8 @@ namespace StellarWallet.WebApi.Controllers
             {
                 if (e.Message == "User not found")
                     return NotFound(e.Message);
+                else if (e.Message == "Unauthorized")
+                    return Unauthorized();
 
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }

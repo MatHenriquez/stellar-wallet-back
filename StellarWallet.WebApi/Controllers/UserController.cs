@@ -26,11 +26,15 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                return Ok(await _userService.GetById(id));
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+
+                return Ok(await _userService.GetById(id, jwt));
             }
             catch (Exception e)
             {
-                return NotFound(e.Message);
+                if (e.Message == "Unauthorized") return Unauthorized();
+                else if (e.Message == "User not found") return NotFound(e.Message);
+                else return StatusCode(500, $"Error: {e.Message}");
             }
         }
 
@@ -56,10 +60,15 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                await _userService.Update(user);
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+                await _userService.Update(user, jwt);
                 return Ok();
             }
-            catch (Exception e) { return NotFound(e.Message); }
+            catch (Exception e) {
+                if (e.Message == "Unauthorized") return Unauthorized();
+                else if (e.Message == "User not found") return NotFound(e.Message);
+                else return StatusCode(500, $"Error: {e.Message}");
+            }
 
         }
 
@@ -69,10 +78,15 @@ namespace StellarWallet.WebApi.Controllers
         {
             try
             {
-                await _userService.Delete(id);
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+                await _userService.Delete(id, jwt);
                 return Ok();
             }
-            catch (Exception e) { return NotFound(e.Message); }
+            catch (Exception e) {
+                if (e.Message == "Unauthorized") return Unauthorized();
+                else if (e.Message == "User not found") return NotFound(e.Message);
+                else return StatusCode(500, $"Error: {e.Message}");
+            }
         }
 
         [HttpPost("wallet")]
