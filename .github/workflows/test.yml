@@ -27,4 +27,6 @@ jobs:
       - name: Run tests
         env:
           ASPNETCORE_ENVIRONMENT: Test
+          CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
+
         run: dotnet test --verbosity normal
