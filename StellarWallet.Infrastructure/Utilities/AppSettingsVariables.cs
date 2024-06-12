@@ -8,7 +8,13 @@ namespace StellarWallet.Infrastructure.Utilities
         {
             string settedEnvironment = SetEnvironment(environment);
 
-            string? directory = Directory.GetParent(Directory.GetCurrentDirectory()).ToString() + "\\StellarWallet.WebApi";
+            string? directory;
+
+            if (settedEnvironment == "test")
+                directory = Directory.GetParent(Directory.GetCurrentDirectory()).ToString() + "\\..\\..\\..\\StellarWallet.WebApi";
+
+            else
+                directory = Directory.GetParent(Directory.GetCurrentDirectory()).ToString() + "\\StellarWallet.WebApi";
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(directory);
 
