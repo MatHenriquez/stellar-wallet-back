@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Application.Mappers;
@@ -42,13 +43,15 @@ builder.Services.AddAuthentication(config =>
     };
 });
 
+var connectionString = builder.Configuration.GetConnectionString("StellarWalletDatabase") ?? throw new Exception("Undefined connection string");
+
 // Add roles authorization
 builder.Services.AddAuthorizationBuilder()
                               .AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "admin"))
                               .AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "user"));
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<DatabaseContext>(); // Add DatabaseContext
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString)); // Add DatabaseContext
 builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserRepository
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
 builder.Services.AddScoped<IBlockchainService, StellarService>(); // Add BlockchainService
