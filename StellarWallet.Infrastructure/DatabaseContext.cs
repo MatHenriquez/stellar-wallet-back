@@ -7,9 +7,16 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
 {
     public class DatabaseContext : DbContext
     {
+        private readonly IConfiguration _configuration;
         public DbSet<User> Users { get; set; }
         public DbSet<BlockchainAccount> BlockchainAccounts { get; set; }
         public DbSet<UserContact> UserContacts { get; set; }
+
+        public DatabaseContext(DbContextOptions<DatabaseContext> options, IConfiguration configuration)
+        : base(options)
+        {
+            _configuration = configuration;
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,15 +42,6 @@ namespace StellarWallet.Infrastructure.DatabaseConnection
                 .WithOne(uc => uc.User)
                 .HasForeignKey(uc => uc.UserId)
                 .OnDelete(DeleteBehavior.NoAction);
-        }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            string environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
-            string connectionString = AppSettingsVariables.GetConnectionString(environment);
-
-            if (!string.IsNullOrEmpty(connectionString))
-                optionsBuilder.UseSqlServer(connectionString);
         }
     }
 }

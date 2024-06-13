@@ -8,9 +8,15 @@ namespace StellarWallet.Infrastructure.Utilities
         {
             string settedEnvironment = SetEnvironment(environment);
 
-            string? directory = Directory.GetParent(Directory.GetCurrentDirectory()).ToString() + "\\StellarWallet.WebApi";
+            string? directory;
+
+            if (settedEnvironment == "test")
+                directory = Path.Combine("..", "..", "..", "..", "StellarWallet.WebApi");
+            else
+                directory = Directory.GetCurrentDirectory();
+
             var configurationBuilder = new ConfigurationBuilder()
-                .SetBasePath(directory);
+                .SetBasePath(Path.GetFullPath(directory));
 
             if (File.Exists($"appsettings.{settedEnvironment}.json"))
                 configurationBuilder.AddJsonFile($"appsettings.{settedEnvironment}.json", optional: false);
