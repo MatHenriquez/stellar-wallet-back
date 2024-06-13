@@ -28,5 +28,6 @@ jobs:
         env:
           ASPNETCORE_ENVIRONMENT: test
           ConnectionStrings__StellarWalletTestDatabase: ${{ secrets.CONNECTION_STRING }}
+          ConnectionStrings__StellarWalletDatabase: ${{ secrets.CONNECTION_STRING }}
 
         run: dotnet test --verbosity normal
