@@ -1,0 +1,11 @@
+{
+   "$schema": "https://alirezanet.github.io/Husky.Net/schema.json",
+   "tasks": [
+      {
+         "name": "prettier",
+         "command": "npx",
+         "args": ["prettier", "--ignore-unknown", "--write", "${staged}"],
+         "pathMode": "absolute"
+       }
+   ]
+}

@@ -19,7 +19,13 @@
 ## or put your custom commands -------------------
 #echo 'Husky.Net is awesome!'
 
-echo 'Welcome to pre-commit git hook with Husky.Net'
+echo 'Welcome to pre-push git hook with Husky.Net'
 
-echo 'Run Dotnet Format'
-dotnet format
+echo 'Clean Project'
+dotnet clean
+
+echo 'Build Project'
+dotnet build
+
+echo 'Run Tests'
+dotnet test
