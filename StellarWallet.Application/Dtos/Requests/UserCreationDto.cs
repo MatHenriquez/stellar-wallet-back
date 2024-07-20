@@ -29,5 +29,5 @@ namespace StellarWallet.Application.Dtos.Requests
         [StringLength(56, MinimumLength = 56, ErrorMessage = "Secret key must have 56 characters.")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{56}$", ErrorMessage = "Special characters are not allowed.")]
         public string? SecretKey { get; set; } = SecretKey;
-    } 
+    }
 }

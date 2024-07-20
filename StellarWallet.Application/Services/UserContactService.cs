@@ -34,12 +34,12 @@ namespace StellarWallet.Application.Services
             if (foundUser.UserContacts?.Count >= 10)
                 throw new Exception("User has reached the maximum number of contacts");
 
-            if(foundUser.UserContacts is not null)
-            foreach (UserContact contact in foundUser.UserContacts)
-            {
-                if (contact.Alias == userContact.Alias)
-                    throw new Exception("Contact already exists");
-            }
+            if (foundUser.UserContacts is not null)
+                foreach (UserContact contact in foundUser.UserContacts)
+                {
+                    if (contact.Alias == userContact.Alias)
+                        throw new Exception("Contact already exists");
+                }
 
             await _userContactRepository.Add(new UserContact(userContact.Alias, foundUser.Id, userContact.PublicKey));
         }

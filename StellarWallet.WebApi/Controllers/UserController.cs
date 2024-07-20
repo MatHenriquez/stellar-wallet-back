@@ -64,7 +64,8 @@ namespace StellarWallet.WebApi.Controllers
                 await _userService.Update(user, jwt);
                 return Ok();
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 if (e.Message == "Unauthorized") return Unauthorized();
                 else if (e.Message == "User not found") return NotFound(e.Message);
                 else return StatusCode(500, $"Error: {e.Message}");
@@ -82,7 +83,8 @@ namespace StellarWallet.WebApi.Controllers
                 await _userService.Delete(id, jwt);
                 return Ok();
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 if (e.Message == "Unauthorized") return Unauthorized();
                 else if (e.Message == "User not found") return NotFound(e.Message);
                 else return StatusCode(500, $"Error: {e.Message}");

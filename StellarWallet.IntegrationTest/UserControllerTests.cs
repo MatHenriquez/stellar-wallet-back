@@ -16,7 +16,7 @@ namespace StellarWallet.IntegrationTest
         {
             var application = new StellarWalletWebApplicationFactory();
 
-            UserCreationDto request = new ("John", "Doe", "my.mail2@test.com", "MyPassword123.", null, null);
+            UserCreationDto request = new("John", "Doe", "my.mail2@test.com", "MyPassword123.", null, null);
 
             var client = application.CreateClient();
 

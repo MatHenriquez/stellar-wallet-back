@@ -11,10 +11,12 @@ namespace StellarWallet.Infrastructure.Repositories
 
         public async Task Add(BlockchainAccount blockchainAccount)
         {
-            try { 
-            await _context.BlockchainAccounts.AddAsync(blockchainAccount);
-            await _context.SaveChangesAsync();
-                } catch (Exception e)
+            try
+            {
+                await _context.BlockchainAccounts.AddAsync(blockchainAccount);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
             {
                 throw new Exception("Error adding blockchain account", e);
             }

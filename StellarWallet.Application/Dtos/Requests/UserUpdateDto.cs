@@ -6,7 +6,7 @@ namespace StellarWallet.Application.Dtos.Requests
     {
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Id must be a positive number")]
-        public int Id { get;} = Id;
+        public int Id { get; } = Id;
 
         [StringLength(50, MinimumLength = 6, ErrorMessage = "Name must have a maximum of 50 characters and a minimun of 6")]
         [RegularExpression(@"^[a-zA-Z''-'\s]{1,50}$", ErrorMessage = "Special characters are not allowed.")]

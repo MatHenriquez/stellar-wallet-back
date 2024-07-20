@@ -15,16 +15,16 @@ namespace StellarWallet.WebApi.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             try
             {
                 return Ok(await _authService.Login(loginDto));
             }
             catch (Exception e)
             {
-                if(e.Message == "Invalid credentials")
+                if (e.Message == "Invalid credentials")
                     return Unauthorized(e.Message);
-                else if(e.Message == "User not found")
+                else if (e.Message == "User not found")
                     return NotFound(e.Message);
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
