@@ -34,7 +34,8 @@ namespace StellarWallet.Infrastructure.Repositories
             try
             {
                 return await _context.UserContacts.Where(uc => uc.UserId == userId).ToListAsync();
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 throw new Exception("Error getting user contacts", e);
             }
