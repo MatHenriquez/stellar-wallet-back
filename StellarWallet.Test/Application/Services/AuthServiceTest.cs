@@ -42,5 +42,71 @@ namespace StellarWallet.UnitTest.Application.Services
             Assert.Equal(loggedDto.Token, result.Token);
             Assert.Equal(loggedDto.PublicKey, result.PublicKey);
         }
+
+        [Fact]
+        public async Task When_InvalidLoginDto_Expected_ThrowException()
+        {
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockJwtService = new Mock<IJwtService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var sut = new AuthService(mockUserRepository.Object, mockJwtService.Object, mockEncryptionService.Object);
+
+            var loginDto = new LoginDto("john.doe@mail.com", "MyPassword123.");
+            mockEncryptionService.Setup(x => x.Verify(loginDto.Password, "EncryptedPassword")).Returns(false);
+
+            await Assert.ThrowsAsync<Exception>(() => sut.Login(loginDto));
+        }
+
+        [Fact]
+        public void When_UnexistingUser_Expected_ThrowException()
+        {
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockJwtService = new Mock<IJwtService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var sut = new AuthService(mockUserRepository.Object, mockJwtService.Object, mockEncryptionService.Object);
+
+            var loginDto = new LoginDto("john.doe@mail.com", "MyPassword123.");
+            mockUserRepository.Setup(x => x.GetBy("Email", loginDto.Email)).ReturnsAsync((User?)null);
+
+            Assert.ThrowsAsync<Exception>(() => sut.Login(loginDto));
+        }
+
+        [Fact]
+        public void When_ValidJwt_Expected_ReturnTrue()
+        {
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockJwtService = new Mock<IJwtService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var sut = new AuthService(mockUserRepository.Object, mockJwtService.Object, mockEncryptionService.Object);
+
+            var jwt = "token";
+            var email = "john.doe@mail.com";
+
+            mockJwtService.Setup(x => x.DecodeToken(jwt)).Returns(email);
+
+            var result = sut.AuthenticateEmail(jwt, email);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void When_InvalidJwt_Expected_ThrowException()
+        {
+            var mockUserRepository = new Mock<IUserRepository>();
+            var mockJwtService = new Mock<IJwtService>();
+            var mockEncryptionService = new Mock<IEncryptionService>();
+
+            var sut = new AuthService(mockUserRepository.Object, mockJwtService.Object, mockEncryptionService.Object);
+
+            var jwt = "token";
+            var email = "john.doe@mail.com";
+
+            mockJwtService.Setup(x => x.DecodeToken(jwt)).Returns((string?)null);
+
+            Assert.Throws<Exception>(() => sut.AuthenticateEmail(jwt, email));
+        }
     }
 }
