@@ -13,7 +13,6 @@ namespace StellarWallet.UnitTest.Application.Services
         [Fact]
         public async Task When_ValidLoginDto_Expected_ReturnLoggedDto()
         {
-            // Arrange
             var mockUserRepository = new Mock<IUserRepository>();
             var mockJwtService = new Mock<IJwtService>();
             var mockEncryptionService = new Mock<IEncryptionService>();
@@ -37,10 +36,8 @@ namespace StellarWallet.UnitTest.Application.Services
 
             mockJwtService.Setup(x => x.CreateToken("john.doe@mail.com", "user")).Returns("token");
 
-            // Act
             var result = await sut.Login(loginDto);
 
-            // Assert
             Assert.True(result.Success);
             Assert.Equal(loggedDto.Token, result.Token);
             Assert.Equal(loggedDto.PublicKey, result.PublicKey);
