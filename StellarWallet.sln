@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.Infrastructur
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.Domain", "StellarWallet.Domain\StellarWallet.Domain.csproj", "{15B4EFC3-2BAC-4D84-9E15-F11C9342770D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.UnitTest", "StellarWallet.Test\StellarWallet.UnitTest.csproj", "{3B5F2BD4-6958-4ED4-A04D-B070F2F0F983}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.UnitTest", "StellarWallet.UnitTest\StellarWallet.UnitTest.csproj", "{3B5F2BD4-6958-4ED4-A04D-B070F2F0F983}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StellarWallet.IntegrationTest", "StellarWallet.IntegrationTest\StellarWallet.IntegrationTest.csproj", "{9F26D3F6-4821-4FB2-A83D-4B091F8BFDCE}"
 EndProject
