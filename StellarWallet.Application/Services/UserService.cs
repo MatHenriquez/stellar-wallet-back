@@ -3,8 +3,8 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Interfaces;
-using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Interfaces.Persistence;
+using StellarWallet.Domain.Interfaces.Services;
 using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
@@ -34,7 +34,7 @@ namespace StellarWallet.Application.Services
 
         public async Task<UserDto> GetById(int id, string jwt)
         {
-            User foundUser = await _userRepository.GetById(id);
+            User foundUser = await _userRepository.GetById(id) ?? throw new Exception("User not found");
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
@@ -63,16 +63,16 @@ namespace StellarWallet.Application.Services
             if (user.Password is not null)
                 user.Password = _encryptionService.Encrypt(user.Password);
 
-            User foundUser = await _userRepository.GetById(user.Id);
+            User foundUser = await _userRepository.GetById(user.Id) ?? throw new Exception("User not found");
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
-            await _userRepository.Update(_mapper.Map<User>(user));
+            _userRepository.Update(_mapper.Map<User>(user));
         }
 
         public async Task Delete(int id, string jwt)
         {
-            User foundUser = await _userRepository.GetById(id);
+            User foundUser = await _userRepository.GetById(id) ?? throw new Exception("User not found");
             AuthenticateUserEmail(jwt, foundUser.Email);
             await _userRepository.Delete(id);
         }
@@ -103,7 +103,7 @@ namespace StellarWallet.Application.Services
                     User = foundUser
                 };
                 await _blockchainAccountRepository.Add(newAccount);
-                await _userRepository.Update(foundUser);
+                _userRepository.Update(foundUser);
             }
             catch (Exception e)
             {

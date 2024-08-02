@@ -2,19 +2,20 @@
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Interfaces.Persistence;
+using StellarWallet.Domain.Interfaces.Services;
 
 namespace StellarWallet.Application.Services
 {
-    public class AuthService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService) : IAuthService
+    public class AuthService(IJwtService jwtService, IEncryptionService encryptionService, IUnitOfWork unitOfWork) : IAuthService
     {
-        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IJwtService _jwtService = jwtService;
         private readonly IEncryptionService _encryptionService = encryptionService;
 
         public async Task<LoggedDto> Login(LoginDto loginDto)
         {
-            User? user = await _userRepository.GetBy("Email", loginDto.Email) ?? throw new Exception("User not found");
+            User? user = await _unitOfWork.User.GetBy("Email", loginDto.Email) ?? throw new Exception("User not found");
             if (!_encryptionService.Verify(loginDto.Password, user.Password))
                 throw new Exception("Invalid credentials");
 

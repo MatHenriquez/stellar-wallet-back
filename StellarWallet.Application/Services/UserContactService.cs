@@ -3,16 +3,15 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Interfaces;
-using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Interfaces.Persistence;
+using StellarWallet.Domain.Interfaces.Services;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserContactService(IUserContactRepository userContactRepository, IUserService userService, IUserRepository userRepository, IJwtService jwtService, IMapper mapper, IAuthService authService) : IUserContactService
+    public class UserContactService(IUserService userService, IJwtService jwtService, IMapper mapper, IAuthService authService, IUnitOfWork unitOfWork) : IUserContactService
     {
-        private readonly IUserContactRepository _userContactRepository = userContactRepository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IUserService _userService = userService;
-        private readonly IUserRepository _userRepository = userRepository;
         private readonly IJwtService _jwtService = jwtService;
         private readonly IAuthService _authService = authService;
         private readonly IMapper _mapper = mapper;
@@ -27,7 +26,7 @@ namespace StellarWallet.Application.Services
         {
             string userEmail = _jwtService.DecodeToken(jwt);
 
-            User foundUser = await _userRepository.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            User foundUser = await _unitOfWork.User.GetBy("Email", userEmail) ?? throw new Exception("User not found");
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
@@ -41,12 +40,12 @@ namespace StellarWallet.Application.Services
                         throw new Exception("Contact already exists");
                 }
 
-            await _userContactRepository.Add(new UserContact(userContact.Alias, foundUser.Id, userContact.PublicKey));
+            await _unitOfWork.UserContact.Add(new UserContact(userContact.Alias, foundUser.Id, userContact.PublicKey));
         }
 
         public async Task Delete(int id)
         {
-            await _userContactRepository.Delete(id);
+            await _unitOfWork.UserContact.Delete(id);
         }
 
         public async Task<IEnumerable<UserContactsDto>> GetAll(int userId, string jwt)
@@ -55,18 +54,18 @@ namespace StellarWallet.Application.Services
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
-            IEnumerable<UserContact> userContacts = await _userContactRepository.GetAll(userId);
+            IEnumerable<UserContact> userContacts = await _unitOfWork.UserContact.GetAll(uc => uc.UserId == userId);
 
             return _mapper.Map<UserContactsDto[]>(userContacts);
         }
 
         public async Task Update(UpdateContactDto userContact)
         {
-            UserContact foundUserContact = await _userContactRepository.GetById(userContact.Id);
+            UserContact foundUserContact = await _unitOfWork.UserContact.GetById(userContact.Id) ?? throw new Exception("Contact not found");
             if (userContact.Alias is not null)
                 foundUserContact.Alias = userContact.Alias;
 
-            await _userContactRepository.Update(foundUserContact);
+            _unitOfWork.UserContact.Update(foundUserContact);
         }
     }
 }
