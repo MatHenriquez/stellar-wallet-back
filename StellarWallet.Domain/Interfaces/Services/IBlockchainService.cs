@@ -1,7 +1,7 @@
 ﻿using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Structs;
 
-namespace StellarWallet.Domain.Repositories
+namespace StellarWallet.Domain.Interfaces.Services
 {
     public interface IBlockchainService
     {

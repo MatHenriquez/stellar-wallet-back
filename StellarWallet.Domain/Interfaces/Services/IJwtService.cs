@@ -1,4 +1,4 @@
-﻿namespace StellarWallet.Application.Interfaces
+﻿namespace StellarWallet.Domain.Interfaces.Services
 {
     public interface IJwtService
     {

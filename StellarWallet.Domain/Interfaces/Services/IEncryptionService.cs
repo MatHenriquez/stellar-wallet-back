@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StellarWallet.Application.Interfaces
+namespace StellarWallet.Domain.Interfaces.Services
 {
     public interface IEncryptionService
     {
