@@ -4,8 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Application.Mappers;
 using StellarWallet.Application.Services;
-using StellarWallet.Domain.Interfaces;
-using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Interfaces.Persistence;
+using StellarWallet.Domain.Interfaces.Services;
 using StellarWallet.Infrastructure.DatabaseConnection;
 using StellarWallet.Infrastructure.Repositories;
 using StellarWallet.Infrastructure.Stellar;
@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(config =>
 
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new Exception("No JWT Key found."))),
     };
 });
 
@@ -51,7 +51,7 @@ builder.Services.AddAuthorizationBuilder()
                               .AddPolicy("User", policy => policy.RequireClaim(ClaimTypes.Role, "user"));
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString)); // Add DatabaseContext
+builder.Services.AddDbContext<DatabaseContext>(options => options.UseSqlServer(connectionString, b => b.MigrationsAssembly("StellarWallet.Infrastructure"))); // Add DatabaseContext
 builder.Services.AddScoped<IUserRepository, UserRepository>(); // Add UserRepository
 builder.Services.AddScoped<IUserService, UserService>(); // Add UserService
 builder.Services.AddScoped<IBlockchainService, StellarService>(); // Add BlockchainService
@@ -63,6 +63,7 @@ builder.Services.AddScoped<IUserContactRepository, UserContactRepository>(); // 
 builder.Services.AddScoped<IUserContactService, UserContactService>(); // Add UserContactService
 builder.Services.AddScoped<IBlockchainAccountRepository, BlockchainAccountRepository>(); // Add BlockchainAccountRepository
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile)); // Add AutoMapper
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -90,6 +91,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+if (app.Environment.EnvironmentName != "test")
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+        db.Database.Migrate();
+    }
 
 app.UseAuthentication();
 
