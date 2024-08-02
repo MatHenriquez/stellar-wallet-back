@@ -2,7 +2,7 @@
 using stellar_dotnet_sdk.responses;
 using stellar_dotnet_sdk.responses.operations;
 using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Repositories;
+using StellarWallet.Domain.Interfaces.Services;
 using StellarWallet.Domain.Structs;
 using StellarWallet.Infrastructure.Utilities;
 

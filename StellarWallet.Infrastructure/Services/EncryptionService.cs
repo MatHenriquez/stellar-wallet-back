@@ -1,4 +1,4 @@
-﻿using StellarWallet.Application.Interfaces;
+﻿using StellarWallet.Domain.Interfaces.Services;
 
 namespace StellarWallet.Application.Services
 {
