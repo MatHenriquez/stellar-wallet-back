@@ -1,25 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using StellarWallet.Domain.Entities;
-using StellarWallet.Domain.Interfaces;
+﻿using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Infrastructure.DatabaseConnection;
 
 namespace StellarWallet.Infrastructure.Repositories
 {
-    public class BlockchainAccountRepository(DatabaseContext context) : IBlockchainAccountRepository
+    public class BlockchainAccountRepository : Repository<BlockchainAccount>, IBlockchainAccountRepository
     {
-        private readonly DatabaseContext _context = context;
+        private readonly DatabaseContext _context;
 
-        public async Task Add(BlockchainAccount blockchainAccount)
+        public BlockchainAccountRepository(DatabaseContext context) : base(context)
         {
-            try
-            {
-                await _context.BlockchainAccounts.AddAsync(blockchainAccount);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error adding blockchain account", e);
-            }
+            _context = context;
         }
     }
 }
