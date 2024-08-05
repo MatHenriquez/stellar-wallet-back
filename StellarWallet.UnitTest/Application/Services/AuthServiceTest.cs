@@ -109,7 +109,7 @@ namespace StellarWallet.UnitTest.Application.Services
             var jwt = "token";
             var email = "john.doe@mail.com";
 
-            mockJwtService.Setup(x => x.DecodeToken(jwt)).Returns((string?)null);
+            mockJwtService.Setup(x => x.DecodeToken(jwt)).Throws(new Exception("Email or role claim not found"));
 
             Assert.Throws<Exception>(() => sut.AuthenticateEmail(jwt, email));
         }
