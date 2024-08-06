@@ -10,6 +10,14 @@ namespace StellarWallet.Application.Dtos.Requests
 
         public bool FilterZeroBalances { get; set; } = false;
 
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int PageNumber { get; set; }
+
+        [Required]
+        [Range(1, int.MaxValue)]
+        public int PageSize { get; set; }
+
         public GetBalancesDto() { }
     }
 }
