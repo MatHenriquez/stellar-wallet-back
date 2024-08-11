@@ -9,20 +9,20 @@ using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
 {
-    public class UserService(IUserRepository userRepository, IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService, IBlockchainAccountRepository blockchainAccountRepository, IAuthService authService
+    public class UserService(IJwtService jwtService, IEncryptionService encryptionService, IMapper mapper, IBlockchainService stellarService, IBlockchainAccountRepository blockchainAccountRepository, IAuthService authService, IUnitOfWork unitOfWork
         ) : IUserService
     {
-        private readonly IUserRepository _userRepository = userRepository;
         private readonly IJwtService _jwtService = jwtService;
         private readonly IEncryptionService _encryptionService = encryptionService;
         private readonly IBlockchainService _stellarService = stellarService;
         private readonly IBlockchainAccountRepository _blockchainAccountRepository = blockchainAccountRepository;
         private readonly IAuthService _authService = authService;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
         public async Task<IEnumerable<UserDto>> GetAll()
         {
-            IEnumerable<User> users = await _userRepository.GetAll();
+            IEnumerable<User> users = await _unitOfWork.User.GetAll();
             return _mapper.Map<UserDto[]>(users);
         }
 
@@ -34,7 +34,7 @@ namespace StellarWallet.Application.Services
 
         public async Task<UserDto> GetById(int id, string jwt)
         {
-            User foundUser = await _userRepository.GetById(id) ?? throw new Exception("User not found");
+            User foundUser = await _unitOfWork.User.GetById(id) ?? throw new Exception("User not found");
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
@@ -43,7 +43,7 @@ namespace StellarWallet.Application.Services
 
         public async Task<LoggedDto> Add(UserCreationDto user)
         {
-            User? foundUser = await _userRepository.GetBy("Email", user.Email);
+            User? foundUser = await _unitOfWork.User.GetBy("Email", user.Email);
             if (foundUser is not null)
                 throw new Exception("User already exists");
 
@@ -53,7 +53,7 @@ namespace StellarWallet.Application.Services
             user.PublicKey = account.PublicKey;
             user.SecretKey = account.SecretKey;
 
-            await _userRepository.Add(_mapper.Map<User>(user));
+            await _unitOfWork.User.Add(_mapper.Map<User>(user));
 
             return new LoggedDto(true, null, user.PublicKey);
         }
@@ -63,18 +63,18 @@ namespace StellarWallet.Application.Services
             if (user.Password is not null)
                 user.Password = _encryptionService.Encrypt(user.Password);
 
-            User foundUser = await _userRepository.GetById(user.Id) ?? throw new Exception("User not found");
+            User foundUser = await _unitOfWork.User.GetById(user.Id) ?? throw new Exception("User not found");
 
             AuthenticateUserEmail(jwt, foundUser.Email);
 
-            _userRepository.Update(_mapper.Map<User>(user));
+            _unitOfWork.User.Update(_mapper.Map<User>(user));
         }
 
         public async Task Delete(int id, string jwt)
         {
-            User foundUser = await _userRepository.GetById(id) ?? throw new Exception("User not found");
+            User foundUser = await _unitOfWork.User.GetById(id) ?? throw new Exception("User not found");
             AuthenticateUserEmail(jwt, foundUser.Email);
-            await _userRepository.Delete(id);
+            await _unitOfWork.User.Delete(id);
         }
 
         public async Task AddWallet(AddWalletDto wallet, string jwt)
@@ -82,7 +82,7 @@ namespace StellarWallet.Application.Services
             try
             {
                 string email = _jwtService.DecodeToken(jwt);
-                User foundUser = await _userRepository.GetBy("Email", email) ?? throw new Exception("User not found");
+                User foundUser = await _unitOfWork.User.GetBy("Email", email) ?? throw new Exception("User not found");
 
                 AuthenticateUserEmail(jwt, foundUser.Email);
 
@@ -103,7 +103,7 @@ namespace StellarWallet.Application.Services
                     User = foundUser
                 };
                 await _blockchainAccountRepository.Add(newAccount);
-                _userRepository.Update(foundUser);
+                _unitOfWork.User.Update(foundUser);
             }
             catch (Exception e)
             {
