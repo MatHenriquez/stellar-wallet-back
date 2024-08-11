@@ -69,14 +69,14 @@ namespace StellarWallet.Application.Services
         {
             AccountBalances[] balances = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
 
+            int totalPages = (int)Math.Ceiling((double)balances.Length / getBalancesDto.PageSize);
+
             if (getBalancesDto.FilterZeroBalances)
-                balances = balances.Where(balance => balance.Amount == "0").ToArray();
+                balances = balances.Where(balance => balance.Amount != "0.0000000").ToArray();
 
             int pageSize = getBalancesDto.PageSize > balances.Length ? balances.Length : getBalancesDto.PageSize;
 
-            balances = balances.Skip((pageSize * getBalancesDto.PageNumber) - 1).Take(pageSize).ToArray();
-
-            int totalPages = (int)Math.Ceiling((double)balances.Length / getBalancesDto.PageSize);
+            balances = balances.Skip((pageSize * (getBalancesDto.PageNumber - 1)) - 1).Take(pageSize).ToArray();
 
             totalPages = totalPages == 0 ? 1 : totalPages;
 
