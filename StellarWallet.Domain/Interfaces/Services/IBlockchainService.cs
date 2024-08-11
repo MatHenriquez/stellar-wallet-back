@@ -10,6 +10,6 @@ namespace StellarWallet.Domain.Interfaces.Services
         public Task<bool> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount);
         public Task<BlockchainPayment[]> GetPayments(string publicKey);
         public Task<bool> GetTestFunds(string publicKey);
-        public Task<AccountBalances[]> GetBalances(string publicKey);
+        public Task<List<AccountBalances>> GetBalances(string publicKey);
     }
 }
