@@ -1,7 +1,7 @@
 {
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "StellarWallet": "Server=(localdb)\\CFServer;Database=StellarWallet;"
+    "StellarWalletDatabase": "Server=(localdb)\\CFServer;Database=StellarWallet;"
   },
   "Stellar": {
     "HorizonUrl": "https://horizon-testnet.stellar.org",
