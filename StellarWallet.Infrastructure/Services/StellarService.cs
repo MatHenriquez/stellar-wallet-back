@@ -130,7 +130,7 @@ namespace StellarWallet.Infrastructure.Stellar
 
         }
 
-        public async Task<AccountBalances[]> GetBalances(string accountId)
+        public async Task<List<AccountBalances>> GetBalances(string accountId)
         {
             var balances = new List<AccountBalances>();
 
@@ -145,7 +145,7 @@ namespace StellarWallet.Infrastructure.Stellar
                 });
             }
 
-            return [.. balances];
+            return balances;
         }
     }
 }

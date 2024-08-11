@@ -1,6 +1,7 @@
 ﻿using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
+using StellarWallet.Application.Utilities;
 using StellarWallet.Domain.Entities;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
@@ -67,20 +68,15 @@ namespace StellarWallet.Application.Services
 
         public async Task<FoundBalancesDto> GetBalances(GetBalancesDto getBalancesDto)
         {
-            AccountBalances[] balances = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
-
-            int totalPages = (int)Math.Ceiling((double)balances.Length / getBalancesDto.PageSize);
+            List<AccountBalances> balances = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
 
             if (getBalancesDto.FilterZeroBalances)
-                balances = balances.Where(balance => balance.Amount != "0.0000000").ToArray();
+                balances = balances.Where(balance => balance.Amount != "0.0000000").ToList();
 
-            int pageSize = getBalancesDto.PageSize > balances.Length ? balances.Length : getBalancesDto.PageSize;
+            int totalPages = Paginate.GetTotalPages(balances.Count, getBalancesDto.PageSize);
+            var paginatedBalances = Paginate.PaginateQuery<AccountBalances>(balances, getBalancesDto.PageNumber, getBalancesDto.PageSize).ToList();
 
-            balances = balances.Skip((pageSize * (getBalancesDto.PageNumber - 1)) - 1).Take(pageSize).ToArray();
-
-            totalPages = totalPages == 0 ? 1 : totalPages;
-
-            return new FoundBalancesDto(balances, totalPages);
+            return new FoundBalancesDto(paginatedBalances, totalPages);
         }
     }
 }
