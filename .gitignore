@@ -49,5 +49,10 @@ ClientBin/
 node_modules/
 orleans.codegen.cs
 
-# Ignore the application configuration file if it contains secrets
+# Ignore the application configuration file if it contains secrets. Ignore it in all the possible paths
+*/appsettings.Development.json
+*/appsettings.Production.json
+*/appsettings.Staging.json
+*/appsettings.Local.json
+*/appsettings.test.json
 **/appsettings.json
