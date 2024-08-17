@@ -54,5 +54,4 @@ orleans.codegen.cs
 */appsettings.Production.json
 */appsettings.Staging.json
 */appsettings.Local.json
-*/appsettings.test.json
 **/appsettings.json
