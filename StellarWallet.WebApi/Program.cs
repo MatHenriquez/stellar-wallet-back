@@ -96,7 +96,7 @@ if (app.Environment.EnvironmentName != "test")
     using (var scope = app.Services.CreateScope())
     {
         var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-        db.Database.Migrate();
+        await db.Database.MigrateAsync();
     }
 
 app.UseAuthentication();
@@ -105,4 +105,4 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();
