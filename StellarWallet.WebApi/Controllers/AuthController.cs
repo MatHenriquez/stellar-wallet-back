@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
 
@@ -26,6 +28,25 @@ namespace StellarWallet.WebApi.Controllers
                     return Unauthorized(e.Message);
                 else if (e.Message == "User not found")
                     return NotFound(e.Message);
+                else
+                    return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("UserToken")]
+        public async Task<IActionResult> UserToken()
+        {
+
+            try
+            {
+                string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
+                return Ok(await _authService.AuthenticateToken(jwt));
+            }
+            catch (Exception e)
+            {
+                if (e.Message == "Unauthorized")
+                    return Unauthorized(e.Message);
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
