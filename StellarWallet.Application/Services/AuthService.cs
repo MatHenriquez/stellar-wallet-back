@@ -30,5 +30,12 @@ namespace StellarWallet.Application.Services
 
             return jwtEmail.Equals(email);
         }
+
+        public async Task<bool> AuthenticateToken(string jwt)
+        {
+            string? email = _jwtService.DecodeToken(jwt);
+
+            return await _unitOfWork.User.GetBy("Email", email) != null;
+        }
     }
 }
