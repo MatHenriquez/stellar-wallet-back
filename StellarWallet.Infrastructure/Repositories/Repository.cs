@@ -24,6 +24,7 @@ namespace StellarWallet.Infrastructure.Repositories
         public async Task Add(T entity)
         {
             await dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
         }
 
         public void Delete(T entity)
