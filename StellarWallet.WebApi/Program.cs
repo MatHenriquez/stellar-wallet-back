@@ -6,7 +6,7 @@ using StellarWallet.Application.Mappers;
 using StellarWallet.Application.Services;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
-using StellarWallet.Infrastructure.DatabaseConnection;
+using StellarWallet.Infrastructure;
 using StellarWallet.Infrastructure.Repositories;
 using StellarWallet.Infrastructure.Stellar;
 using System.Security.Claims;

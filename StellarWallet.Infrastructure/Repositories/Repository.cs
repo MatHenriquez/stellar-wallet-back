@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StellarWallet.Domain.Interfaces.Persistence;
-using StellarWallet.Infrastructure.DatabaseConnection;
 using System.Linq.Expressions;
 
 namespace StellarWallet.Infrastructure.Repositories
