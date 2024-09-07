@@ -1,6 +1,4 @@
-﻿using StellarWallet.Domain.Entities;
-
-namespace StellarWallet.Application.Dtos.Responses
+﻿namespace StellarWallet.Application.Dtos.Responses
 {
     public class UserDto(int Id, string name, string lastName, string email, string publicKey, ICollection<BlockchainAccountDto>? blockchainAccounts, ICollection<UserContactsDto> userContacts)
     {
