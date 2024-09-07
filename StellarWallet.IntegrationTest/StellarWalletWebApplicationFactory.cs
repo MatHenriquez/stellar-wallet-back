@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using StellarWallet.Infrastructure.DatabaseConnection;
+using StellarWallet.Infrastructure;
 
 namespace StellarWallet.IntegrationTest
 {
