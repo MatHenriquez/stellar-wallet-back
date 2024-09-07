@@ -1,5 +1,4 @@
 ﻿using StellarWallet.Domain.Interfaces.Persistence;
-using StellarWallet.Infrastructure.DatabaseConnection;
 
 namespace StellarWallet.Infrastructure.Repositories
 {
