@@ -2,7 +2,7 @@
 using StellarWallet.Domain.Entities;
 using System.Reflection;
 
-namespace StellarWallet.Infrastructure.DatabaseConnection
+namespace StellarWallet.Infrastructure
 {
     public class DatabaseContext : DbContext
     {
