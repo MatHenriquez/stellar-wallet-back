@@ -1,5 +1,6 @@
 ﻿using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Result;
+using System.Text.Json.Serialization;
 
 namespace StellarWallet.Domain.Result
 {
@@ -9,6 +10,7 @@ namespace StellarWallet.Domain.Result
         public bool IsSuccess { get; }
         public TError Error { get; }
 
+        [JsonConstructor]
         private Result(TValue value, bool isSuccess, TError error)
         {
             Value = value;
