@@ -83,7 +83,9 @@ namespace StellarWallet.WebApi.Controllers
             if (jwt is null)
                 return Unauthorized();
 
-            bool wasFunded = await _transactionService.GetTestFunds(getTestFundsDto.PublicKey);
+            var getFundsResponse = await _transactionService.GetTestFunds(getTestFundsDto.PublicKey);
+
+            bool wasFunded = getFundsResponse.IsSuccess;
 
             if (wasFunded)
                 return Ok();
