@@ -2,8 +2,10 @@
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 
 namespace StellarWallet.Application.Services
 {
@@ -13,29 +15,59 @@ namespace StellarWallet.Application.Services
         private readonly IJwtService _jwtService = jwtService;
         private readonly IEncryptionService _encryptionService = encryptionService;
 
-        public async Task<LoggedDto> Login(LoginDto loginDto)
+        public async Task<Result<LoggedDto, DomainError>> Login(LoginDto loginDto)
         {
-            User? user = await _unitOfWork.User.GetBy("Email", loginDto.Email) ?? throw new Exception("User not found");
+            User? user = await _unitOfWork.User.GetBy("Email", loginDto.Email);
+            if (user is null)
+            {
+                return Result<LoggedDto, DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
+
             if (!_encryptionService.Verify(loginDto.Password, user.Password))
-                throw new Exception("Invalid credentials");
+            {
+                return Result<LoggedDto, DomainError>.Failure(DomainError.Unauthorized("Invalid credentials"));
+            }
 
-            string createdToken = _jwtService.CreateToken(user.Email, user.Role);
+            var createdTokenResponse = _jwtService.CreateToken(user.Email, user.Role);
 
-            return new LoggedDto(true, createdToken, user.PublicKey);
+            if (!createdTokenResponse.IsSuccess)
+            {
+                return Result<LoggedDto, DomainError>.Failure(createdTokenResponse.Error);
+            }
+
+            var createdToken = createdTokenResponse.Value;
+
+            return Result<LoggedDto, DomainError>.Success(new LoggedDto(createdTokenResponse.IsSuccess, createdToken, user.PublicKey));
         }
 
-        public bool AuthenticateEmail(string jwt, string email)
+        public Result<bool, DomainError> AuthenticateEmail(string jwt, string email)
         {
-            string jwtEmail = _jwtService.DecodeToken(jwt) ?? throw new Exception("Unauthorized");
+            var jwtEmailDecoding = _jwtService.DecodeToken(jwt);
 
-            return jwtEmail.Equals(email);
+            if (!jwtEmailDecoding.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(jwtEmailDecoding.Error);
+            }
+
+            var jwtEmail = jwtEmailDecoding.Value;
+
+            return Result<bool, DomainError>.Success(jwtEmail.Equals(email));
         }
 
-        public async Task<bool> AuthenticateToken(string jwt)
+        public async Task<Result<bool, DomainError>> AuthenticateToken(string jwt)
         {
-            string? email = _jwtService.DecodeToken(jwt);
+            var jwtEmailResponse = _jwtService.DecodeToken(jwt);
 
-            return await _unitOfWork.User.GetBy("Email", email) != null;
+            if (!jwtEmailResponse.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(jwtEmailResponse.Error);
+            }
+
+            var email = jwtEmailResponse.Value;
+
+            var userExists = await _unitOfWork.User.GetBy("Email", email) is not null;
+
+            return Result<bool, DomainError>.Success(userExists);
         }
     }
 }

@@ -3,8 +3,10 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 
 namespace StellarWallet.Application.Services
 {
@@ -16,19 +18,28 @@ namespace StellarWallet.Application.Services
         private readonly IAuthService _authService = authService;
         private readonly IMapper _mapper = mapper;
 
-        private void AuthenticateUserEmail(string jwt, string email)
+        public async Task<Result<bool, DomainError>> Add(AddContactDto userContact, string jwt)
         {
-            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
-            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
-        }
+            var userEmailDecoding = _jwtService.DecodeToken(jwt);
 
-        public async Task Add(AddContactDto userContact, string jwt)
-        {
-            string userEmail = _jwtService.DecodeToken(jwt);
+            if (!userEmailDecoding.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(userEmailDecoding.Error);
+            }
 
-            User foundUser = await _unitOfWork.User.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            User? foundUser = await _unitOfWork.User.GetBy("Email", userEmailDecoding.Value);
 
-            AuthenticateUserEmail(jwt, foundUser.Email);
+            if (foundUser is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
+
+            var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Email);
+
+            if (!IsValidEmail.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(IsValidEmail.Error);
+            }
 
             if (foundUser.UserContacts?.Count >= 10)
                 throw new Exception("User has reached the maximum number of contacts");
@@ -41,31 +52,68 @@ namespace StellarWallet.Application.Services
                 }
 
             await _unitOfWork.UserContact.Add(new UserContact(userContact.Alias, foundUser.Id, userContact.PublicKey));
+
+            return Result<bool, DomainError>.Success(IsValidEmail.IsSuccess);
         }
 
-        public async Task Delete(int id)
+        public async Task<Result<bool, DomainError>> Delete(int id)
         {
+            UserContact? userContactFound = await _unitOfWork.UserContact.GetById(id);
+
+            if (userContactFound is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("Contact not found"));
+            }
+
             await _unitOfWork.UserContact.Delete(id);
+
+            return Result<bool, DomainError>.Success(true);
         }
 
-        public async Task<IEnumerable<UserContactsDto>> GetAll(int userId, string jwt)
+        public async Task<Result<IEnumerable<UserContactsDto>, DomainError>> GetAll(int userId, string jwt)
         {
-            var foundUser = await _userService.GetById(userId, jwt) ?? throw new Exception("User not found");
+            var foundUser = await _userService.GetById(userId, jwt);
+            if (foundUser is null)
+            {
+                return Result<IEnumerable<UserContactsDto>, DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
 
-            AuthenticateUserEmail(jwt, foundUser.Email);
+            var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Value.Email);
+
+            if (!IsValidEmail.IsSuccess)
+            {
+                return Result<IEnumerable<UserContactsDto>, DomainError>.Failure(IsValidEmail.Error);
+            }
 
             IEnumerable<UserContact> userContacts = await _unitOfWork.UserContact.GetAll(uc => uc.UserId == userId);
 
-            return _mapper.Map<UserContactsDto[]>(userContacts);
+            if (userContacts is null)
+            {
+                return Result<IEnumerable<UserContactsDto>, DomainError>.Failure(DomainError.NotFound("Contacts not found"));
+            }
+
+            var mappedUserContacts = _mapper.Map<UserContactsDto[]>(userContacts);
+
+            return Result<IEnumerable<UserContactsDto>, DomainError>.Success(mappedUserContacts);
         }
 
-        public async Task Update(UpdateContactDto userContact)
+        public async Task<Result<bool, DomainError>> Update(UpdateContactDto userContact)
         {
-            UserContact foundUserContact = await _unitOfWork.UserContact.GetById(userContact.Id) ?? throw new Exception("Contact not found");
+            UserContact? foundUserContact = await _unitOfWork.UserContact.GetById(userContact.Id);
+
+            if (foundUserContact is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("Contact not found"));
+            }
+
             if (userContact.Alias is not null)
+            {
                 foundUserContact.Alias = userContact.Alias;
+            }
 
             _unitOfWork.UserContact.Update(foundUserContact);
+
+            return Result<bool, DomainError>.Success(true);
         }
     }
 }

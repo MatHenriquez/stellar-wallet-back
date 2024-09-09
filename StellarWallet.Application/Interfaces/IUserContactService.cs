@@ -1,13 +1,15 @@
 ﻿using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
+using StellarWallet.Domain.Errors;
+using StellarWallet.Domain.Result;
 
 namespace StellarWallet.Application.Interfaces
 {
     public interface IUserContactService
     {
-        Task<IEnumerable<UserContactsDto>> GetAll(int id, string jwt);
-        Task Add(AddContactDto userContact, string jwt);
-        Task Update(UpdateContactDto userContact);
-        Task Delete(int id);
+        Task<Result<IEnumerable<UserContactsDto>, DomainError>> GetAll(int id, string jwt);
+        Task<Result<bool, DomainError>> Add(AddContactDto userContact, string jwt);
+        Task<Result<bool, DomainError>> Update(UpdateContactDto userContact);
+        Task<Result<bool, DomainError>> Delete(int id);
     }
 }

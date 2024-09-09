@@ -5,6 +5,8 @@
         NotFound,
         Invalid,
         Conflict,
-        ExternalServiceError
+        ExternalServiceError,
+        UnauthorizedError,
+        InternalError
     }
 }

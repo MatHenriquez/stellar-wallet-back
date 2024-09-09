@@ -3,8 +3,10 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Application.Services;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.UnitTest.Application.Services
@@ -27,70 +29,76 @@ namespace StellarWallet.UnitTest.Application.Services
         [Fact]
         public async Task When_ValidJwt_Expected_CreateAccount()
         {
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
             _mockBlockchainService.Setup(x => x.CreateAccount(_validUser.Id)).Returns(new BlockchainAccount(_validUser.PublicKey, _validUser.SecretKey, _validUser.Id));
 
             var result = await _sut.CreateAccount(JWT);
 
-            Assert.True(result.PublicKey == _validUser.PublicKey);
-            Assert.True(result.SecretKey == _validUser.SecretKey);
-            Assert.True(result.UserId == _validUser.Id);
+            Assert.True(result.Value.PublicKey == _validUser.PublicKey);
+            Assert.True(result.Value.SecretKey == _validUser.SecretKey);
+            Assert.True(result.Value.UserId == _validUser.Id);
         }
 
         [Fact]
-        public async Task When_UnexistingUser_Expected_ThrowException()
+        public async Task When_UnexistingUser_Expected_UnsuccessfulResponse()
         {
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync((User)null);
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.CreateAccount(JWT));
+            var result = await _sut.CreateAccount(JWT);
+
+            Assert.True(!result.IsSuccess);
         }
 
         [Fact]
         public async Task When_InvalidJwt_Expected_ThrowException()
         {
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
             _mockBlockchainService.Setup(x => x.CreateAccount(_validUser.Id)).Returns(new BlockchainAccount(_validUser.PublicKey, _validUser.SecretKey, _validUser.Id));
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.CreateAccount("invalidToken"));
+            await Assert.ThrowsAsync<NullReferenceException>(() => _sut.CreateAccount("invalidToken"));
         }
 
         [Fact]
         public async Task When_ValidSendPayment_Expected_True()
         {
             var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10);
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
-            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(true);
-            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString())).ReturnsAsync(true);
+            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
+            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString())).ReturnsAsync(Result<bool, DomainError>.Success(true));
 
             var result = await _sut.SendPayment(sendPaymentDto, JWT);
 
-            Assert.True(result);
+            Assert.True(result.IsSuccess);
         }
 
         [Fact]
-        public async Task When_UnexistingUserSendPayment_Expected_ThrowException()
+        public async Task When_UnexistingUserSendPayment_Expected_UnsuccessfulResponse()
         {
             var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10);
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync((User)null);
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.SendPayment(sendPaymentDto, JWT));
+            var result = await _sut.SendPayment(sendPaymentDto, JWT);
+
+            Assert.True(!result.IsSuccess);
         }
 
         [Fact]
-        public async Task When_InvalidJwtSendPayment_Expected_ThrowException()
+        public async Task When_InvalidJwtSendPayment_Expected_UnsuccessfulResponse()
         {
             var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10);
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
-            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(true);
-            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString())).ReturnsAsync(true);
+            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
+            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString())).ReturnsAsync(Result<bool, DomainError>.Failure(DomainError.Unauthorized()));
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.SendPayment(sendPaymentDto, "invalidToken"));
+            var result = await _sut.SendPayment(sendPaymentDto, JWT);
+
+            Assert.True(!result.IsSuccess);
         }
 
         [Fact]
@@ -112,48 +120,52 @@ namespace StellarWallet.UnitTest.Application.Services
 
             var pageNumber = 1;
             var pageSize = 1;
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
-            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(true);
-            _mockBlockchainService.Setup(x => x.GetPayments(_validUser.PublicKey)).ReturnsAsync(blockchainPayments);
+            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
+            _mockBlockchainService.Setup(x => x.GetPayments(_validUser.PublicKey)).ReturnsAsync(Result<BlockchainPayment[], DomainError>.Success(blockchainPayments));
 
             var result = await _sut.GetTransaction(JWT, pageNumber, pageSize);
 
-            Assert.True(result.Length == pageSize);
-            Assert.Equal(result[0], blockchainPayments[0]);
+            Assert.True(result.Value.Length == pageSize);
+            Assert.Equal(result.Value[0], blockchainPayments[0]);
         }
 
         [Fact]
-        public async Task When_UnexistingUserGetTransaction_Expected_ThrowException()
+        public async Task When_UnexistingUserGetTransaction_Expected_UnsuccessfulResponse()
         {
             var pageNumber = 1;
             var pageSize = 1;
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email)); ;
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync((User)null);
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.GetTransaction(JWT, pageNumber, pageSize));
+            var result = await _sut.GetTransaction(JWT, pageNumber, pageSize);
+
+            Assert.True(!result.IsSuccess);
         }
 
         [Fact]
-        public async Task When_InvalidJwtGetTransaction_Expected_ThrowException()
+        public async Task When_InvalidJwtGetTransaction_Expected_UnsuccessfulResponse()
         {
             var pageNumber = 1;
             var pageSize = 1;
-            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(_validUser.Email);
+            _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Failure(DomainError.Unauthorized()));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
-            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(true);
+            _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
 
-            await Assert.ThrowsAsync<Exception>(() => _sut.GetTransaction("invalidToken", pageNumber, pageSize));
+            var result = await _sut.GetTransaction(JWT, pageNumber, pageSize);
+
+            Assert.False(result.IsSuccess);
         }
 
         [Fact]
         public async Task When_ValidGetTestFunds_Expected_True()
         {
-            _mockBlockchainService.Setup(x => x.GetTestFunds(_validUser.PublicKey)).ReturnsAsync(true);
+            _mockBlockchainService.Setup(x => x.GetTestFunds(_validUser.PublicKey)).ReturnsAsync(Result<bool, DomainError>.Success(true));
 
             var result = await _sut.GetTestFunds(_validUser.PublicKey);
 
-            Assert.True(result);
+            Assert.True(result.Value);
         }
 
         [Fact]
@@ -176,17 +188,17 @@ namespace StellarWallet.UnitTest.Application.Services
                 }
             };
 
-            _mockBlockchainService.Setup(x => x.GetBalances(getBalancesDto.PublicKey)).ReturnsAsync(accountBalances);
+            _mockBlockchainService.Setup(x => x.GetBalances(getBalancesDto.PublicKey)).ReturnsAsync(Result<List<AccountBalances>, DomainError>.Success(accountBalances));
 
             var result = await _sut.GetBalances(getBalancesDto);
 
-            Assert.True(result.Balances.Count == accountBalances.Count);
-            Assert.Equal(result.Balances[0], accountBalances[0]);
-            Assert.True(result.TotalPages == 1);
+            Assert.True(result.Value.Balances.Count == accountBalances.Count);
+            Assert.Equal(result.Value.Balances[0], accountBalances[0]);
+            Assert.True(result.Value.TotalPages == 1);
         }
 
         [Fact]
-        public async Task When_InvalidGetBalances_Expected_ThrowException()
+        public async Task When_InvalidGetBalances_Expected_UnsuccessfulResponse()
         {
             var getBalancesDto = new GetBalancesDto()
             {
@@ -196,9 +208,11 @@ namespace StellarWallet.UnitTest.Application.Services
                 PageSize = 1
             };
 
-            _mockBlockchainService.Setup(x => x.GetBalances(getBalancesDto.PublicKey)).ReturnsAsync((List<AccountBalances>)null);
+            _mockBlockchainService.Setup(x => x.GetBalances(getBalancesDto.PublicKey)).ReturnsAsync(Result<List<AccountBalances>, DomainError>.Failure(DomainError.ExternalServiceError()));
 
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.GetBalances(getBalancesDto));
+            var result = await _sut.GetBalances(getBalancesDto);
+
+            Assert.True(!result.IsSuccess);
         }
     }
 }

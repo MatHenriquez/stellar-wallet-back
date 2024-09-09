@@ -2,7 +2,9 @@
 using stellar_dotnet_sdk.responses;
 using stellar_dotnet_sdk.responses.operations;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 using StellarWallet.Domain.Structs;
 using StellarWallet.Infrastructure.Utilities;
 
@@ -42,7 +44,7 @@ namespace StellarWallet.Infrastructure.Stellar
             return accountKeyPair;
         }
 
-        public async Task<bool> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount)
+        public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount)
         {
             KeyPair sourceKeypair = KeyPair.FromSecretSeed(sourceSecretKey);
 
@@ -63,23 +65,28 @@ namespace StellarWallet.Infrastructure.Stellar
                 transaction.Sign(sourceKeypair, network);
 
                 SubmitTransactionResponse response = await server.SubmitTransaction(transaction);
-                return response.IsSuccess();
+
+                if (response.IsSuccess())
+                {
+                    return Result<bool, DomainError>.Success(response.IsSuccess());
+                }
+
+                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Transaction failed"));
             }
             catch (Exception e)
             {
-                throw new Exception("Stellar Error " + e.Message);
+                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Stellar Error " + e.Message));
             }
         }
 
-        public async Task<BlockchainPayment[]> GetPayments(string accountId)
+        public async Task<Result<BlockchainPayment[], DomainError>> GetPayments(string accountId)
         {
             var payments = new List<BlockchainPayment>();
 
-            var server = new Server("https://horizon-testnet.stellar.org");
-            var paymentsRequestBuilder = server.Payments.ForAccount(accountId);
-
             try
             {
+                var server = new Server(horizonUrl);
+                var paymentsRequestBuilder = server.Payments.ForAccount(accountId);
                 var page = await paymentsRequestBuilder.Execute();
 
                 while (true)
@@ -108,44 +115,55 @@ namespace StellarWallet.Infrastructure.Stellar
             }
             catch (Exception e)
             {
-                throw new Exception("Stellar Error " + e.Message);
+                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.ExternalServiceError("Stellar Error " + e.Message));
             }
 
-            return [.. payments];
+            return Result<BlockchainPayment[], DomainError>.Success([.. payments]);
         }
 
-        public async Task<bool> GetTestFunds(string accountId)
+        public async Task<Result<bool, DomainError>> GetTestFunds(string accountId)
         {
             try
             {
                 var friendBotRequest = new HttpRequestMessage(HttpMethod.Get, $"{horizonUrl}/friendbot?addr={accountId}");
                 var response = await new HttpClient().SendAsync(friendBotRequest);
 
-                return response.IsSuccessStatusCode;
-            }
-            catch
-            {
-                return false;
-            }
+                if (!response.IsSuccessStatusCode)
+                {
+                    return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Test funds failed"));
+                }
 
+                return Result<bool, DomainError>.Success(true);
+            }
+            catch (Exception e)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Stellar Error " + e.Message));
+            }
         }
 
-        public async Task<List<AccountBalances>> GetBalances(string accountId)
+        public async Task<Result<List<AccountBalances>, DomainError>> GetBalances(string accountId)
         {
-            var balances = new List<AccountBalances>();
-
-            var account = await server.Accounts.Account(accountId);
-
-            foreach (var balance in account.Balances)
+            try
             {
-                balances.Add(new AccountBalances
-                {
-                    Asset = balance.Asset is AssetTypeNative ? "native" : ((AssetTypeCreditAlphaNum)balance.Asset).Code,
-                    Amount = balance.BalanceString,
-                });
-            }
+                var balances = new List<AccountBalances>();
 
-            return balances;
+                var account = await server.Accounts.Account(accountId);
+
+                foreach (var balance in account.Balances)
+                {
+                    balances.Add(new AccountBalances
+                    {
+                        Asset = balance.Asset is AssetTypeNative ? "native" : ((AssetTypeCreditAlphaNum)balance.Asset).Code,
+                        Amount = balance.BalanceString,
+                    });
+                }
+
+                return Result<List<AccountBalances>, DomainError>.Success(balances);
+            }
+            catch (Exception e)
+            {
+                return Result<List<AccountBalances>, DomainError>.Failure(DomainError.ExternalServiceError("Stellar Error " + e.Message));
+            }
         }
     }
 }

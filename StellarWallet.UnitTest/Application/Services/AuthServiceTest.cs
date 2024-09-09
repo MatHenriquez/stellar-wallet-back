@@ -3,8 +3,10 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Services;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 
 namespace StellarWallet.UnitTest.Application.Services
 {
@@ -34,17 +36,17 @@ namespace StellarWallet.UnitTest.Application.Services
 
             mockEncryptionService.Setup(x => x.Verify(loginDto.Password, "EncryptedPassword")).Returns(true);
 
-            mockJwtService.Setup(x => x.CreateToken("john.doe@mail.com", "user")).Returns("token");
+            mockJwtService.Setup(x => x.CreateToken("john.doe@mail.com", "user")).Returns(Result<string, DomainError>.Success("token"));
 
             var result = await sut.Login(loginDto);
 
-            Assert.True(result.Success);
-            Assert.Equal(loggedDto.Token, result.Token);
-            Assert.Equal(loggedDto.PublicKey, result.PublicKey);
+            Assert.True(result.Value.Success);
+            Assert.Equal(loggedDto.Token, result.Value.Token);
+            Assert.Equal(loggedDto.PublicKey, result.Value.PublicKey);
         }
 
         [Fact]
-        public async Task When_InvalidLoginDto_Expected_ThrowException()
+        public async Task When_InvalidLoginDto_Expected_UnsuccessfulResponse()
         {
             var mockUnitOfWork = new Mock<IUnitOfWork>();
             var mockJwtService = new Mock<IJwtService>();
@@ -60,7 +62,9 @@ namespace StellarWallet.UnitTest.Application.Services
             var loginDto = new LoginDto("john.doe@mail.com", "MyPassword123.");
             mockEncryptionService.Setup(x => x.Verify(loginDto.Password, "EncryptedPassword")).Returns(false);
 
-            await Assert.ThrowsAsync<Exception>(() => sut.Login(loginDto));
+            var result = await sut.Login(loginDto);
+
+            Assert.False(result.IsSuccess);
         }
 
         [Fact]
@@ -90,11 +94,11 @@ namespace StellarWallet.UnitTest.Application.Services
             var jwt = "token";
             var email = "john.doe@mail.com";
 
-            mockJwtService.Setup(x => x.DecodeToken(jwt)).Returns(email);
+            mockJwtService.Setup(x => x.DecodeToken(jwt)).Returns(Result<string, DomainError>.Success(email));
 
             var result = sut.AuthenticateEmail(jwt, email);
 
-            Assert.True(result);
+            Assert.True(result.Value);
         }
 
         [Fact]

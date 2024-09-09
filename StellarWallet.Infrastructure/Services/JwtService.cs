@@ -1,20 +1,26 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace StellarWallet.Application.Services
+namespace StellarWallet.Infrastructure.Services
 {
     public class JwtService(IConfiguration config) : IJwtService
     {
-        private readonly string secretKey = config.GetSection("Jwt").GetSection("Key").Value ?? throw new Exception("Secret key not found");
-        private readonly string issuer = config.GetSection("Jwt").GetSection("Issuer").Value ?? throw new Exception("Issuer not found");
-        private readonly string audience = config.GetSection("Jwt").GetSection("Audience").Value ?? throw new Exception("Audience not found");
+        private readonly string? secretKey = config.GetSection("Jwt").GetSection("Key").Value;
+        private readonly string? issuer = config.GetSection("Jwt").GetSection("Issuer").Value;
+        private readonly string? audience = config.GetSection("Jwt").GetSection("Audience").Value;
 
-        public string CreateToken(string email, string role)
+        public Result<string, DomainError> CreateToken(string email, string role)
         {
+            if (secretKey is null)
+            {
+                return Result<string, DomainError>.Failure(DomainError.NotFound("No secret key found."));
+            }
             var keyBytes = Encoding.ASCII.GetBytes(secretKey);
             var claims = new ClaimsIdentity();
 
@@ -32,15 +38,18 @@ namespace StellarWallet.Application.Services
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenConfig = tokenHandler.CreateToken(tokenDescriptor);
 
-            return tokenHandler.WriteToken(tokenConfig);
+            return Result<string, DomainError>.Success(tokenHandler.WriteToken(tokenConfig));
         }
 
-        public string DecodeToken(string token)
+        public Result<string, DomainError> DecodeToken(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
 
-            if (secretKey == null)
-                throw new Exception("Secret key not found");
+            if (secretKey is null)
+            {
+                return Result<string, DomainError>.Failure(DomainError.NotFound("No secret key found."));
+            }
+
             var keyBytes = Encoding.ASCII.GetBytes(secretKey);
 
             var validationParameters = new TokenValidationParameters
@@ -51,26 +60,24 @@ namespace StellarWallet.Application.Services
                 ValidateAudience = false
             };
 
-            try
+            var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out _);
+
+            if (claimsPrincipal is null)
             {
-                var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out _);
-
-                var allClaims = claimsPrincipal.Claims.ToList();
-                if (allClaims.Count == 0)
-                    throw new Exception("No claims found");
-
-                var emailClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-                var roleClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
-
-                if (emailClaim == null || roleClaim == null)
-                    throw new Exception("Email or role claim not found");
-
-                return emailClaim.Value;
+                return Result<string, DomainError>.Failure(DomainError.NotFound("No claims found."));
             }
-            catch (Exception ex)
+
+            var allClaims = claimsPrincipal.Claims.ToList();
+
+            var emailClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            var roleClaim = allClaims.FirstOrDefault(c => c.Type == ClaimTypes.Role);
+
+            if (emailClaim is null || roleClaim is null)
             {
-                throw new Exception($"Error decoding JWT: {ex.Message}");
+                return Result<string, DomainError>.Failure(DomainError.NotFound("Email or role claim not found."));
             }
+
+            return Result<string, DomainError>.Success(emailClaim.Value);
         }
     }
 }
