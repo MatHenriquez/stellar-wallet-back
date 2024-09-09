@@ -1,5 +1,7 @@
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
+using StellarWallet.Domain.Errors;
+using StellarWallet.Domain.Result;
 using System.Net.Http.Json;
 
 namespace StellarWallet.IntegrationTest
@@ -23,11 +25,11 @@ namespace StellarWallet.IntegrationTest
             var response = await client.PostAsJsonAsync("/User", request);
 
             response.EnsureSuccessStatusCode();
-            var createUserResponse = await response.Content.ReadFromJsonAsync<LoggedDto>();
+            var createUserResponse = await response.Content.ReadFromJsonAsync<Result<LoggedDto, DomainError>>();
 
-            Assert.True(createUserResponse?.Success);
-            Assert.Null(createUserResponse?.Token);
-            Assert.NotNull(createUserResponse?.PublicKey);
+            Assert.True(createUserResponse?.Value.Success);
+            Assert.Null(createUserResponse?.Value.Token);
+            Assert.NotNull(createUserResponse?.Value.PublicKey);
         }
     }
 }
