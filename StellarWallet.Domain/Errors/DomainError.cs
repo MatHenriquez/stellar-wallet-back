@@ -8,5 +8,7 @@
         public static DomainError Invalid(string? errorMessage = "Invalid parameter.") => new(errorMessage, ErrorType.Invalid);
         public static DomainError Conflict(string? errorMessage = "Conflict with existing data.") => new(errorMessage, ErrorType.Conflict);
         public static DomainError ExternalServiceError(string? errorMessage = "External service error.") => new(errorMessage, ErrorType.ExternalServiceError);
+        public static DomainError Unauthorized(string? errorMessage = "Unauthorized access.") => new(errorMessage, ErrorType.UnauthorizedError);
+        public static DomainError InternalError(string? errorMessage = "Internal server error.") => new(errorMessage, ErrorType.InternalError);
     }
 }
