@@ -6,11 +6,12 @@ using StellarWallet.Application.Mappers;
 using StellarWallet.Application.Services;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
-using StellarWallet.Infrastructure;
+using StellarWallet.Infrastructure.Services;
 using StellarWallet.Infrastructure.Repositories;
 using StellarWallet.Infrastructure.Stellar;
 using System.Security.Claims;
 using System.Text;
+using StellarWallet.Infrastructure;
 
 string environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "test";
 
