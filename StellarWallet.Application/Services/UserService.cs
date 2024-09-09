@@ -3,8 +3,10 @@ using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
@@ -26,26 +28,34 @@ namespace StellarWallet.Application.Services
             return _mapper.Map<UserDto[]>(users);
         }
 
-        private void AuthenticateUserEmail(string jwt, string email)
+        public async Task<Result<UserDto, DomainError>> GetById(int id, string jwt)
         {
-            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
-            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
+            User? foundUser = await _unitOfWork.User.GetById(id);
+
+            if (foundUser is null)
+            {
+                return Result<UserDto, DomainError>.Failure(DomainError.NotFound("User not found."));
+            }
+
+            var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Email);
+
+            if (!IsValidEmail.IsSuccess)
+            {
+                return Result<UserDto, DomainError>.Failure(IsValidEmail.Error);
+            }
+
+            var mappedUser = _mapper.Map<UserDto>(foundUser);
+
+            return Result<UserDto, DomainError>.Success(mappedUser);
         }
 
-        public async Task<UserDto> GetById(int id, string jwt)
-        {
-            User foundUser = await _unitOfWork.User.GetById(id) ?? throw new Exception("User not found");
-
-            AuthenticateUserEmail(jwt, foundUser.Email);
-
-            return _mapper.Map<UserDto>(foundUser);
-        }
-
-        public async Task<LoggedDto> Add(UserCreationDto user)
+        public async Task<Result<LoggedDto, DomainError>> Add(UserCreationDto user)
         {
             User? foundUser = await _unitOfWork.User.GetBy("Email", user.Email);
             if (foundUser is not null)
-                throw new Exception("User already exists");
+            {
+                return Result<LoggedDto, DomainError>.Failure(DomainError.Conflict("User already exists."));
+            }
 
             user.Password = _encryptionService.Encrypt(user.Password);
 
@@ -55,59 +65,102 @@ namespace StellarWallet.Application.Services
 
             await _unitOfWork.User.Add(_mapper.Map<User>(user));
 
-            return new LoggedDto(true, null, user.PublicKey);
+            return Result<LoggedDto, DomainError>.Success(new LoggedDto(true, null, user.PublicKey));
         }
 
-        public async Task Update(UserUpdateDto user, string jwt)
+        public async Task<Result<bool, DomainError>> Update(UserUpdateDto user, string jwt)
         {
             if (user.Password is not null)
+            {
                 user.Password = _encryptionService.Encrypt(user.Password);
+            }
 
-            User foundUser = await _unitOfWork.User.GetById(user.Id) ?? throw new Exception("User not found");
+            User? foundUser = await _unitOfWork.User.GetById(user.Id);
+            if (foundUser is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("User not found."));
+            }
 
-            AuthenticateUserEmail(jwt, foundUser.Email);
+            var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Email);
+
+            if (!IsValidEmail.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(IsValidEmail.Error);
+            }
 
             _unitOfWork.User.Update(_mapper.Map<User>(user));
+
+            return Result<bool, DomainError>.Success(IsValidEmail.IsSuccess);
         }
 
-        public async Task Delete(int id, string jwt)
+        public async Task<Result<bool, DomainError>> Delete(int id, string jwt)
         {
-            User foundUser = await _unitOfWork.User.GetById(id) ?? throw new Exception("User not found");
-            AuthenticateUserEmail(jwt, foundUser.Email);
+            User? foundUser = await _unitOfWork.User.GetById(id);
+            if (foundUser is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("User not found."));
+                throw new Exception("User not found");
+            }
+
+            var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Email);
+
+            if (!IsValidEmail.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(IsValidEmail.Error);
+            }
+
             await _unitOfWork.User.Delete(id);
+
+            return Result<bool, DomainError>.Success(IsValidEmail.IsSuccess);
         }
 
-        public async Task AddWallet(AddWalletDto wallet, string jwt)
+        public async Task<Result<bool, DomainError>> AddWallet(AddWalletDto wallet, string jwt)
         {
             try
             {
-                string email = _jwtService.DecodeToken(jwt);
-                User foundUser = await _unitOfWork.User.GetBy("Email", email) ?? throw new Exception("User not found");
+                var email = _jwtService.DecodeToken(jwt);
+                User? foundUser = await _unitOfWork.User.GetBy("Email", email.Value);
+                if (foundUser is null)
+                {
+                    return Result<bool, DomainError>.Failure(DomainError.NotFound("User not found."));
+                }
 
-                AuthenticateUserEmail(jwt, foundUser.Email);
+                var IsValidEmail = _authService.AuthenticateEmail(jwt, foundUser.Email);
+
+                if (!IsValidEmail.IsSuccess)
+                {
+                    return Result<bool, DomainError>.Failure(IsValidEmail.Error);
+                }
 
                 if (foundUser.BlockchainAccounts is not null)
                 {
                     foreach (BlockchainAccount account in foundUser.BlockchainAccounts)
                     {
                         if (account.PublicKey == wallet.PublicKey)
-                            throw new Exception("Wallet already exists");
+                        {
+                            return Result<bool, DomainError>.Failure(DomainError.Conflict("Wallet already exists."));
+                        }
                     }
 
                     if (foundUser.BlockchainAccounts.Count >= 5)
-                        throw new Exception("User already has 5 wallets");
+                    {
+                        return Result<bool, DomainError>.Failure(DomainError.Conflict("User already has 5 wallets."));
+                    }
                 }
 
                 BlockchainAccount newAccount = new(wallet.PublicKey, wallet.SecretKey, foundUser.Id)
                 {
                     User = foundUser
                 };
+
                 await _blockchainAccountRepository.Add(newAccount);
                 _unitOfWork.User.Update(foundUser);
+
+                return Result<bool, DomainError>.Success(true);
             }
             catch (Exception e)
             {
-                throw new Exception("Error adding wallet: " + e.Message);
+                return Result<bool, DomainError>.Failure(DomainError.InternalError(e.Message));
             }
         }
     }

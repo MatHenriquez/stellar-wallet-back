@@ -3,8 +3,10 @@ using StellarWallet.Application.Dtos.Responses;
 using StellarWallet.Application.Interfaces;
 using StellarWallet.Application.Utilities;
 using StellarWallet.Domain.Entities;
+using StellarWallet.Domain.Errors;
 using StellarWallet.Domain.Interfaces.Persistence;
 using StellarWallet.Domain.Interfaces.Services;
+using StellarWallet.Domain.Result;
 using StellarWallet.Domain.Structs;
 
 namespace StellarWallet.Application.Services
@@ -16,67 +18,110 @@ namespace StellarWallet.Application.Services
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IAuthService _authService = authService;
 
-        private void AuthenticateUserEmail(string jwt, string email)
+        public async Task<Result<BlockchainAccount, DomainError>> CreateAccount(string jwt)
         {
-            bool isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, email);
-            if (!isAnAuthorizedUser) throw new Exception("Unauthorized");
+            var userEmail = _jwtService.DecodeToken(jwt);
+
+            User? user = await _unitOfWork.User.GetBy("Email", userEmail.Value);
+            if (user is null)
+            {
+                return Result<BlockchainAccount, DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
+
+            return Result<BlockchainAccount, DomainError>.Success(_blockchainService.CreateAccount(user.Id));
         }
 
-        public async Task<BlockchainAccount> CreateAccount(string jwt)
+        public async Task<Result<bool, DomainError>> SendPayment(SendPaymentDto sendPaymentDto, string jwt)
         {
-            string userEmail = _jwtService.DecodeToken(jwt);
-            User user = await _unitOfWork.User.GetBy("Email", userEmail) ?? throw new Exception("User not found");
-            return _blockchainService.CreateAccount(user.Id);
+            var userEmail = _jwtService.DecodeToken(jwt);
+            User? user = await _unitOfWork.User.GetBy("Email", userEmail.Value);
+
+            if (user is null)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
+
+            var isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, userEmail.Value);
+            if (!isAnAuthorizedUser.IsSuccess)
+            {
+                return Result<bool, DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
+            }
+
+            var transactionResponse = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
+
+            bool transactionCompleted = transactionResponse.IsSuccess;
+
+            if (!transactionCompleted)
+            {
+                return transactionResponse;
+            }
+
+            return Result<bool, DomainError>.Success(transactionCompleted);
         }
 
-        public async Task<bool> SendPayment(SendPaymentDto sendPaymentDto, string jwt)
+        public async Task<Result<BlockchainPayment[], DomainError>> GetTransaction(string jwt, int pageNumber, int pageSize)
         {
-            string userEmail = _jwtService.DecodeToken(jwt);
-            User user = await _unitOfWork.User.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            var userEmailDecoding = _jwtService.DecodeToken(jwt);
 
-            AuthenticateUserEmail(jwt, user.Email);
+            if (!userEmailDecoding.IsSuccess)
+            {
+                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
+            }
 
-            bool transactionCompleted = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
+            User? user = await _unitOfWork.User.GetBy("Email", userEmailDecoding.Value);
 
-            if (transactionCompleted)
-                return transactionCompleted;
-            else
-                throw new Exception("Transaction failed");
-        }
+            if (user is null)
+            {
+                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.NotFound("User not found"));
+            }
 
-        public async Task<BlockchainPayment[]> GetTransaction(string jwt, int pageNumber, int pageSize)
-        {
-            string userEmail = _jwtService.DecodeToken(jwt);
-            User user = await _unitOfWork.User.GetBy("Email", userEmail) ?? throw new Exception("User not found");
+            var isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, userEmailDecoding.Value);
+            if (!isAnAuthorizedUser.IsSuccess)
+            {
+                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
+            }
 
-            AuthenticateUserEmail(jwt, user.Email);
+            var getPaymentsResponse = await _blockchainService.GetPayments(user.PublicKey);
 
-            BlockchainPayment[] allPayments = await _blockchainService.GetPayments(user.PublicKey);
+            if (!getPaymentsResponse.IsSuccess)
+            {
+                return getPaymentsResponse;
+            }
+
+            BlockchainPayment[] allPayments = getPaymentsResponse.Value;
 
             BlockchainPayment[] paginatedPayments = allPayments
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToArray();
 
-            return paginatedPayments;
+            return Result<BlockchainPayment[], DomainError>.Success(paginatedPayments);
         }
 
-        public async Task<bool> GetTestFunds(string publicKey)
+        public async Task<Result<bool, DomainError>> GetTestFunds(string publicKey)
         {
-            return await _blockchainService.GetTestFunds(publicKey);
+            var getTestFundsResponse = await _blockchainService.GetTestFunds(publicKey);
+            if (!getTestFundsResponse.IsSuccess) { return getTestFundsResponse; }
+
+            return Result<bool, DomainError>.Success(getTestFundsResponse.Value);
         }
 
-        public async Task<FoundBalancesDto> GetBalances(GetBalancesDto getBalancesDto)
+        public async Task<Result<FoundBalancesDto, DomainError>> GetBalances(GetBalancesDto getBalancesDto)
         {
-            List<AccountBalances> balances = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
+            var getBalancesResponse = await _blockchainService.GetBalances(getBalancesDto.PublicKey);
+            if (!getBalancesResponse.IsSuccess) { return Result<FoundBalancesDto, DomainError>.Failure(getBalancesResponse.Error); }
+
+            List<AccountBalances> balances = getBalancesResponse.Value;
 
             if (getBalancesDto.FilterZeroBalances)
+            {
                 balances = balances.Where(balance => balance.Amount != "0.0000000").ToList();
+            }
 
             int totalPages = Paginate.GetTotalPages(balances.Count, getBalancesDto.PageSize);
             var paginatedBalances = Paginate.PaginateQuery<AccountBalances>(balances, getBalancesDto.PageNumber, getBalancesDto.PageSize).ToList();
 
-            return new FoundBalancesDto(paginatedBalances, totalPages);
+            return Result<FoundBalancesDto, DomainError>.Success(new FoundBalancesDto(paginatedBalances, totalPages));
         }
     }
 }
