@@ -8,7 +8,7 @@ using StellarWallet.Domain.Result;
 using StellarWallet.Domain.Structs;
 using StellarWallet.Infrastructure.Utilities;
 
-namespace StellarWallet.Infrastructure.Stellar
+namespace StellarWallet.Infrastructure.Services
 {
     public class StellarService : IBlockchainService
     {
