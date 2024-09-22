@@ -1,6 +1,6 @@
 ﻿using StellarWallet.Domain.Interfaces.Services;
 
-namespace StellarWallet.Application.Services
+namespace StellarWallet.Infrastructure.Services
 {
     public class EncryptionService : IEncryptionService
     {
