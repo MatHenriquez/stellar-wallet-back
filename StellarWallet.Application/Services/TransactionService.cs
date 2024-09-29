@@ -47,7 +47,7 @@ namespace StellarWallet.Application.Services
                 return Result<bool, DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
             }
 
-            var transactionResponse = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString());
+            var transactionResponse = await _blockchainService.SendPayment(user.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString(), sendPaymentDto.Memo);
 
             bool transactionCompleted = transactionResponse.IsSuccess;
 

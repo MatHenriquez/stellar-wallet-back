@@ -44,7 +44,7 @@ namespace StellarWallet.Infrastructure.Services
             return accountKeyPair;
         }
 
-        public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount)
+        public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount, string memo)
         {
             KeyPair sourceKeypair = KeyPair.FromSecretSeed(sourceSecretKey);
 
@@ -60,6 +60,7 @@ namespace StellarWallet.Infrastructure.Services
 
                 Transaction transaction = new TransactionBuilder(sourceAccount)
                    .AddOperation(paymentOperation)
+                   .AddMemo(new MemoText(memo))
                    .Build();
 
                 transaction.Sign(sourceKeypair, network);
