@@ -46,38 +46,38 @@ namespace StellarWallet.Infrastructure.Services
 
         public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount, string memo)
         {
-            KeyPair sourceKeypair = KeyPair.FromSecretSeed(sourceSecretKey);
+            var sourceKeypair = KeyPair.FromSecretSeed(sourceSecretKey);
 
             AccountResponse sourceAccountResponse;
-            try
+
+            sourceAccountResponse = await server.Accounts.Account(sourceKeypair.AccountId);
+
+            var destinationKeyPair = KeyPair.FromAccountId(destinationPublicKey);
+
+            if (sourceAccountResponse is null || destinationKeyPair is null)
             {
-                sourceAccountResponse = await server.Accounts.Account(sourceKeypair.AccountId);
-
-                KeyPair destinationKeyPair = KeyPair.FromAccountId(destinationPublicKey);
-                Account sourceAccount = new Account(sourceKeypair.AccountId, sourceAccountResponse.SequenceNumber);
-
-                PaymentOperation paymentOperation = new PaymentOperation.Builder(destinationKeyPair, new AssetTypeNative(), amount).SetSourceAccount(sourceAccount.KeyPair).Build();
-
-                Transaction transaction = new TransactionBuilder(sourceAccount)
-                   .AddOperation(paymentOperation)
-                   .AddMemo(new MemoText(memo))
-                   .Build();
-
-                transaction.Sign(sourceKeypair, network);
-
-                SubmitTransactionResponse response = await server.SubmitTransaction(transaction);
-
-                if (response.IsSuccess())
-                {
-                    return Result<bool, DomainError>.Success(response.IsSuccess());
-                }
-
-                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Transaction failed"));
+                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Invalid account"));
             }
-            catch (Exception e)
+
+            Account sourceAccount = new Account(sourceKeypair.AccountId, sourceAccountResponse.SequenceNumber);
+
+            PaymentOperation paymentOperation = new PaymentOperation.Builder(destinationKeyPair, new AssetTypeNative(), amount).SetSourceAccount(sourceAccount.KeyPair).Build();
+
+            Transaction transaction = new TransactionBuilder(sourceAccount)
+               .AddOperation(paymentOperation)
+               .AddMemo(new MemoText(memo))
+               .Build();
+
+            transaction.Sign(sourceKeypair, network);
+
+            SubmitTransactionResponse response = await server.SubmitTransaction(transaction);
+
+            if (response.IsSuccess())
             {
-                return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Stellar Error " + e.Message));
+                return Result<bool, DomainError>.Success(response.IsSuccess());
             }
+
+            return Result<bool, DomainError>.Failure(DomainError.ExternalServiceError("Transaction failed"));
         }
 
         public async Task<Result<BlockchainPayment[], DomainError>> GetPayments(string accountId)
