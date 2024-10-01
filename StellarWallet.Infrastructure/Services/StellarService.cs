@@ -156,6 +156,7 @@ namespace StellarWallet.Infrastructure.Services
                     {
                         Asset = balance.Asset is AssetTypeNative ? "native" : ((AssetTypeCreditAlphaNum)balance.Asset).Code,
                         Amount = balance.BalanceString,
+                        Issuer = balance.Asset is AssetTypeNative ? "native" : ((AssetTypeCreditAlphaNum)balance.Asset).Issuer
                     });
                 }
 
