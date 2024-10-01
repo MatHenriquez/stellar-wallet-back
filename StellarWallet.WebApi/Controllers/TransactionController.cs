@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StellarWallet.Application.Dtos.Requests;
 using StellarWallet.Application.Interfaces;
+using StellarWallet.Domain.Errors;
 
 namespace StellarWallet.WebApi.Controllers
 {
@@ -40,17 +41,31 @@ namespace StellarWallet.WebApi.Controllers
             try
             {
                 string jwt = await HttpContext.GetTokenAsync("access_token") ?? throw new Exception("Unauthorized");
-                await _transactionService.SendPayment(sendPaymentDto, jwt);
-                return Ok();
+                var paymentResult = await _transactionService.SendPayment(sendPaymentDto, jwt);
+
+                if (paymentResult.IsSuccess)
+                {
+                    return Ok();
+                }
+                else
+                {
+                    int statusCode = paymentResult.Error.ErrorType switch
+                    {
+                        ErrorType.NotFound => StatusCodes.Status404NotFound,
+                        ErrorType.Invalid => StatusCodes.Status400BadRequest,
+                        ErrorType.Conflict => StatusCodes.Status409Conflict,
+                        ErrorType.ExternalServiceError => StatusCodes.Status503ServiceUnavailable,
+                        ErrorType.UnauthorizedError => StatusCodes.Status401Unauthorized,
+                        _ => StatusCodes.Status500InternalServerError
+                    };
+
+                    return StatusCode(statusCode, paymentResult.Error.ErrorMessage);
+                }
             }
             catch (Exception e)
             {
-                if (e.Message == "User not found")
-                    return NotFound(e.Message);
-                else if (e.Message == "Unauthorized")
-                    return Unauthorized();
-
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+                Console.WriteLine(e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "There was an error processing the payment.");
             }
         }
 
