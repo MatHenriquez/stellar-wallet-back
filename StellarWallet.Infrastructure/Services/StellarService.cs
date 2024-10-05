@@ -44,7 +44,7 @@ namespace StellarWallet.Infrastructure.Services
             return accountKeyPair;
         }
 
-        public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount, string memo)
+        public async Task<Result<bool, DomainError>> SendPayment(string sourceSecretKey, string destinationPublicKey, string amount, string assetIssuer, string assetCode, string memo)
         {
             var sourceKeypair = KeyPair.FromSecretSeed(sourceSecretKey);
 
@@ -61,7 +61,9 @@ namespace StellarWallet.Infrastructure.Services
 
             Account sourceAccount = new Account(sourceKeypair.AccountId, sourceAccountResponse.SequenceNumber);
 
-            PaymentOperation paymentOperation = new PaymentOperation.Builder(destinationKeyPair, new AssetTypeNative(), amount).SetSourceAccount(sourceAccount.KeyPair).Build();
+            var asset = assetIssuer == "native" ? (Asset)new AssetTypeNative() : Asset.CreateNonNativeAsset(assetCode, assetIssuer);
+
+            PaymentOperation paymentOperation = new PaymentOperation.Builder(destinationKeyPair, asset, amount).SetSourceAccount(sourceAccount.KeyPair).Build();
 
             Transaction transaction = new TransactionBuilder(sourceAccount)
                .AddOperation(paymentOperation)
