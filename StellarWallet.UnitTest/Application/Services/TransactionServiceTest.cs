@@ -64,11 +64,11 @@ namespace StellarWallet.UnitTest.Application.Services
         [Fact]
         public async Task When_ValidSendPayment_Expected_True()
         {
-            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, "test_memo");
+            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, string.Empty, string.Empty, "test_memo");
             _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
             _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
-            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString(), "test_memo")).ReturnsAsync(Result<bool, DomainError>.Success(true));
+            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString(), string.Empty, string.Empty, "test_memo")).ReturnsAsync(Result<bool, DomainError>.Success(true));
 
             var result = await _sut.SendPayment(sendPaymentDto, JWT);
 
@@ -78,7 +78,7 @@ namespace StellarWallet.UnitTest.Application.Services
         [Fact]
         public async Task When_UnexistingUserSendPayment_Expected_UnsuccessfulResponse()
         {
-            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, "test_memo");
+            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, string.Empty, string.Empty, "test_memo");
             _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync((User)null);
 
@@ -90,11 +90,11 @@ namespace StellarWallet.UnitTest.Application.Services
         [Fact]
         public async Task When_InvalidJwtSendPayment_Expected_UnsuccessfulResponse()
         {
-            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, "test_memo");
+            var sendPaymentDto = new SendPaymentDto(_validUser.PublicKey, 10, string.Empty, string.Empty, "test_memo");
             _mockJwtService.Setup(x => x.DecodeToken(JWT)).Returns(Result<string, DomainError>.Success(_validUser.Email));
             _mockUnitOfWork.Setup(x => x.User.GetBy("Email", _validUser.Email)).ReturnsAsync(_validUser);
             _mockAuthService.Setup(x => x.AuthenticateEmail(JWT, _validUser.Email)).Returns(Result<bool, DomainError>.Success(true));
-            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString(), "test_memo")).ReturnsAsync(Result<bool, DomainError>.Failure(DomainError.Unauthorized()));
+            _mockBlockchainService.Setup(x => x.SendPayment(_validUser.SecretKey, sendPaymentDto.DestinationPublicKey, sendPaymentDto.Amount.ToString(), string.Empty, string.Empty, "test_memo")).ReturnsAsync(Result<bool, DomainError>.Failure(DomainError.Unauthorized()));
 
             var result = await _sut.SendPayment(sendPaymentDto, JWT);
 
