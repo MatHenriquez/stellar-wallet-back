@@ -59,43 +59,47 @@ namespace StellarWallet.Application.Services
             return Result<bool, DomainError>.Success(transactionCompleted);
         }
 
-        public async Task<Result<BlockchainPayment[], DomainError>> GetTransaction(string jwt, int pageNumber, int pageSize)
+        public async Task<Result<TransactionsDto, DomainError>> GetTransaction(string jwt, int pageNumber, int pageSize)
         {
             var userEmailDecoding = _jwtService.DecodeToken(jwt);
 
             if (!userEmailDecoding.IsSuccess)
             {
-                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
+                return Result<TransactionsDto, DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
             }
 
             User? user = await _unitOfWork.User.GetBy("Email", userEmailDecoding.Value);
 
             if (user is null)
             {
-                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.NotFound("User not found"));
+                return Result<TransactionsDto, DomainError>.Failure(DomainError.NotFound("User not found"));
             }
 
             var isAnAuthorizedUser = _authService.AuthenticateEmail(jwt, userEmailDecoding.Value);
             if (!isAnAuthorizedUser.IsSuccess)
             {
-                return Result<BlockchainPayment[], DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
+                return Result<TransactionsDto, DomainError>.Failure(DomainError.Unauthorized("Unauthorized"));
             }
 
             var getPaymentsResponse = await _blockchainService.GetPayments(user.PublicKey);
 
             if (!getPaymentsResponse.IsSuccess)
             {
-                return getPaymentsResponse;
+                return Result<TransactionsDto, DomainError>.Failure(getPaymentsResponse.Error);
             }
 
             BlockchainPayment[] allPayments = getPaymentsResponse.Value;
 
-            BlockchainPayment[] paginatedPayments = allPayments
+            List<BlockchainPayment> paginatedPayments = allPayments
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .ToArray();
+                .ToList();
 
-            return Result<BlockchainPayment[], DomainError>.Success(paginatedPayments);
+            var totalPages = Paginate.GetTotalPages(allPayments.Length, pageSize);
+
+            TransactionsDto paginatedPaymentsDto = new(paginatedPayments, totalPages);
+
+            return Result<TransactionsDto, DomainError>.Success(paginatedPaymentsDto);
         }
 
         public async Task<Result<bool, DomainError>> GetTestFunds(string publicKey)
