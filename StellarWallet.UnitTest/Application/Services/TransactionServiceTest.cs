@@ -127,8 +127,8 @@ namespace StellarWallet.UnitTest.Application.Services
 
             var result = await _sut.GetTransaction(JWT, pageNumber, pageSize);
 
-            Assert.True(result.Value.Length == pageSize);
-            Assert.Equal(result.Value[0], blockchainPayments[0]);
+            Assert.True(result.Value.Payments.Count == pageSize);
+            Assert.Equal(result.Value.Payments[0], blockchainPayments[0]);
         }
 
         [Fact]
